@@ -31,6 +31,9 @@ async function getCachedOrganization(reqHeaders: Headers, slug: string) {
     query: {
       organizationSlug: slug,
     },
+  }).catch((error) => {
+    console.error('Error getting organization', error);
+    return null;
   });
 
   return organization;
@@ -43,6 +46,9 @@ async function getCachedOrganizations(reqHeaders: Headers) {
 
   const organizations = await auth.api.listOrganizations({
     headers: reqHeaders,
+  }).catch((error) => {
+    console.error('Error getting organizations', error);
+    return [];
   });
 
   return organizations ?? [];
@@ -63,6 +69,7 @@ export default async function OrgLayout({ children, params }: OrgLayoutProps) {
   ]);
 
   if (!organization) {
+    throw new Error('Organization not found');
     notFound();
   }
 
