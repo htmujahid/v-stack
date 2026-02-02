@@ -69,7 +69,6 @@ export default async function OrgLayout({ children, params }: OrgLayoutProps) {
   ]);
 
   if (!organization) {
-    throw new Error('Organization not found');
     notFound();
   }
 
