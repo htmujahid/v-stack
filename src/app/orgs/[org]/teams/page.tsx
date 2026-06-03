@@ -1,43 +1,26 @@
 import * as React from 'react';
+import { cache } from 'react';
 
-import { cacheLife, cacheTag } from 'next/cache';
 import { headers } from 'next/headers';
 
 import { Shell } from '@/components/layout/shell';
 import { TeamsTable } from '@/components/organization/teams-table';
 import { Skeleton } from '@/components/ui/skeleton';
+import { getOrganization } from '@/data/organization';
 import { auth } from '@/lib/auth';
 
 interface TeamsPageProps {
   params: Promise<{ org: string }>;
 }
 
-async function getCachedOrganization(reqHeaders: Headers, slug: string) {
-  'use cache';
-  cacheLife('hours');
-  cacheTag(`organization-${slug}`);
-
-  return await auth.api.getFullOrganization({
-    headers: reqHeaders,
-    query: {
-      organizationSlug: slug,
-    },
-  });
-}
-
-async function getCachedTeams(reqHeaders: Headers, organizationId: string) {
-  'use cache';
-  cacheLife('hours');
-  cacheTag(`organization-teams-${organizationId}`);
-
+const getTeams = cache(async (organizationId: string) => {
+  const reqHeaders = await headers();
   const [teamsRes, activeMemberRes] = await Promise.all([
     auth.api.listOrganizationTeams({
       headers: reqHeaders,
       query: { organizationId },
     }),
-    auth.api.getActiveMember({
-      headers: reqHeaders,
-    }),
+    auth.api.getActiveMember({ headers: reqHeaders }),
   ]);
 
   return {
@@ -50,19 +33,18 @@ async function getCachedTeams(reqHeaders: Headers, organizationId: string) {
     }>,
     activeMember: activeMemberRes as { id: string; role: string } | null,
   };
-}
+});
 
 export default async function TeamsPage({ params }: TeamsPageProps) {
   const { org: slug } = await params;
-  const reqHeaders = await headers();
 
-  const organization = await getCachedOrganization(reqHeaders, slug);
+  const organization = await getOrganization(slug);
 
   if (!organization) {
     return null;
   }
 
-  const teamsPromise = getCachedTeams(reqHeaders, organization.id);
+  const teamsPromise = getTeams(organization.id);
 
   return (
     <Shell>
@@ -86,7 +68,7 @@ export default async function TeamsPage({ params }: TeamsPageProps) {
           </div>
         }
       >
-        <TeamsTable promises={teamsPromise} orgSlug={slug} />
+        <TeamsTable promises={teamsPromise} />
       </React.Suspense>
     </Shell>
   );

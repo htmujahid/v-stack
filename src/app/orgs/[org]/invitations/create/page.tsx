@@ -1,32 +1,18 @@
-import { cacheLife, cacheTag } from 'next/cache';
+import { cache } from 'react';
+
 import { headers } from 'next/headers';
 
 import { Shell } from '@/components/layout/shell';
 import { InviteMemberForm } from '@/components/organization/invite-member-form';
+import { getOrganization } from '@/data/organization';
 import { auth } from '@/lib/auth';
 
 interface InvitePageProps {
   params: Promise<{ org: string }>;
 }
 
-async function getCachedOrganization(reqHeaders: Headers, slug: string) {
-  'use cache';
-  cacheLife('hours');
-  cacheTag(`organization-${slug}`);
-
-  return await auth.api.getFullOrganization({
-    headers: reqHeaders,
-    query: {
-      organizationSlug: slug,
-    },
-  });
-}
-
-async function getCachedRoles(reqHeaders: Headers, organizationId: string) {
-  'use cache';
-  cacheLife('hours');
-  cacheTag(`organization-roles-${organizationId}`);
-
+const getRoles = cache(async (organizationId: string) => {
+  const reqHeaders = await headers();
   const roles = await auth.api.listOrgRoles({
     headers: reqHeaders,
     query: { organizationId },
@@ -36,27 +22,22 @@ async function getCachedRoles(reqHeaders: Headers, organizationId: string) {
     id: string;
     role: string;
   }>;
-}
+});
 
 export default async function InvitePage({ params }: InvitePageProps) {
   const { org: slug } = await params;
-  const reqHeaders = await headers();
-  const organization = await getCachedOrganization(reqHeaders, slug);
+  const organization = await getOrganization(slug);
 
   if (!organization) {
     return null;
   }
 
-  const customRoles = await getCachedRoles(reqHeaders, organization.id);
+  const customRoles = await getRoles(organization.id);
 
   return (
     <Shell>
       <div className="mx-auto w-full max-w-md">
-        <InviteMemberForm
-          organizationId={organization.id}
-          orgSlug={slug}
-          customRoles={customRoles}
-        />
+        <InviteMemberForm customRoles={customRoles} />
       </div>
     </Shell>
   );

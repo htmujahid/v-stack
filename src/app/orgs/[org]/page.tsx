@@ -1,5 +1,3 @@
-import { cacheLife, cacheTag } from 'next/cache';
-import { headers } from 'next/headers';
 import Link from 'next/link';
 
 import { ArrowRight, Mail, Settings, Users } from 'lucide-react';
@@ -15,31 +13,17 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import pathsConfig from '@/config/paths.config';
-import { auth } from '@/lib/auth';
+import { getOrganization } from '@/data/organization';
 
 interface OrganizationPageProps {
   params: Promise<{ org: string }>;
-}
-
-async function getCachedOrganization(reqHeaders: Headers, slug: string) {
-  'use cache';
-  cacheLife('hours');
-  cacheTag(`organization-${slug}`);
-
-  return await auth.api.getFullOrganization({
-    headers: reqHeaders,
-    query: {
-      organizationSlug: slug,
-    },
-  });
 }
 
 export default async function OrganizationPage({
   params,
 }: OrganizationPageProps) {
   const { org: slug } = await params;
-  const reqHeaders = await headers();
-  const organization = await getCachedOrganization(reqHeaders, slug);
+  const organization = await getOrganization(slug);
 
   if (!organization) {
     return null;

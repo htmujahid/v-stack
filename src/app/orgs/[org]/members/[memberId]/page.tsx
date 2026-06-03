@@ -1,4 +1,3 @@
-import { cacheLife, cacheTag } from 'next/cache';
 import { headers } from 'next/headers';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -19,6 +18,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import pathsConfig from '@/config/paths.config';
+import { getOrganization } from '@/data/organization';
 import { auth } from '@/lib/auth';
 import { formatDate } from '@/lib/format';
 
@@ -26,32 +26,17 @@ interface MemberDetailPageProps {
   params: Promise<{ org: string; memberId: string }>;
 }
 
-async function getCachedOrganization(reqHeaders: Headers, slug: string) {
-  'use cache';
-  cacheLife('hours');
-  cacheTag(`organization-${slug}`);
-
-  return await auth.api.getFullOrganization({
-    headers: reqHeaders,
-    query: {
-      organizationSlug: slug,
-    },
-  });
-}
-
 async function getMemberDetails(
-  reqHeaders: Headers,
   organizationId: string,
   memberId: string,
 ) {
+  const reqHeaders = await headers();
   const [membersRes, activeMemberRes] = await Promise.all([
     auth.api.listMembers({
       headers: reqHeaders,
       query: { organizationId },
     }),
-    auth.api.getActiveMember({
-      headers: reqHeaders,
-    }),
+    auth.api.getActiveMember({ headers: reqHeaders }),
   ]);
 
   const members = membersRes?.members ?? [];
@@ -77,16 +62,14 @@ export default async function MemberDetailPage({
   params,
 }: MemberDetailPageProps) {
   const { org: slug, memberId } = await params;
-  const reqHeaders = await headers();
 
-  const organization = await getCachedOrganization(reqHeaders, slug);
+  const organization = await getOrganization(slug);
 
   if (!organization) {
     notFound();
   }
 
   const { member, activeMember } = await getMemberDetails(
-    reqHeaders,
     organization.id,
     memberId,
   );
@@ -196,10 +179,8 @@ export default async function MemberDetailPage({
               <CardContent>
                 <UpdateMemberForm
                   memberId={member.id}
-                  organizationId={organization.id}
                   currentRole={member.role}
                   memberName={member.user.name}
-                  orgSlug={slug}
                 />
               </CardContent>
             </Card>
@@ -226,8 +207,6 @@ export default async function MemberDetailPage({
           <MemberActions
             memberId={member.id}
             memberName={member.user.name}
-            organizationId={organization.id}
-            orgSlug={slug}
             isCurrentUser={isCurrentUser}
             canRemove={canRemove}
           />

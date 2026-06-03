@@ -1,16 +1,17 @@
-import { cacheLife, cacheTag } from 'next/cache';
 import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 
 import { AppBreadcrumbs } from '@/components/layout/app-breadcrumb';
 import { NotificationDropdown } from '@/components/layout/notification-dropdown';
 import { OrgSidebar } from '@/components/layout/org-sidebar';
+import { OrganizationProvider } from '@/components/providers/organization-provider';
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { auth } from '@/lib/auth';
+import { getOrganization, getOrganizations } from '@/data/organization';
 import { requireAuth } from '@/orpc/proxy';
 
 interface OrgLayoutProps {
@@ -18,58 +19,20 @@ interface OrgLayoutProps {
   params: Promise<{ org: string }>;
 }
 
-async function getCachedOrganization(reqHeaders: Headers, slug: string) {
-  'use cache';
-  cacheLife('hours');
-  cacheTag(`organization-${slug}`);
-
-  const organization = await auth.api
-    .getFullOrganization({
-      headers: reqHeaders,
-      query: {
-        organizationSlug: slug,
-      },
-    })
-    .catch((error) => {
-      console.error('Error getting organization', error);
-      return null;
-    });
-
-  return organization;
-}
-
-async function getCachedOrganizations(reqHeaders: Headers) {
-  'use cache';
-  cacheLife('hours');
-  cacheTag('organizations');
-
-  const organizations = await auth.api
-    .listOrganizations({
-      headers: reqHeaders,
-    })
-    .catch((error) => {
-      console.error('Error getting organizations', error);
-      return [];
-    });
-
-  return organizations ?? [];
-}
-
 export default async function OrgLayout({ children, params }: OrgLayoutProps) {
   const { org: slug } = await params;
-  const reqHeaders = await headers();
   await requireAuth();
 
   const [organization, organizations] = await Promise.all([
-    getCachedOrganization(reqHeaders, slug),
-    getCachedOrganizations(reqHeaders),
+    getOrganization(slug),
+    getOrganizations(),
   ]);
 
   if (!organization) {
     notFound();
   }
 
-  // Set the active organization for this session
+  const reqHeaders = await headers();
   await auth.api.setActiveOrganization({
     headers: reqHeaders,
     body: {
@@ -110,7 +73,9 @@ export default async function OrgLayout({ children, params }: OrgLayoutProps) {
             </div>
           </div>
         </header>
-        <div className="flex flex-1 flex-col gap-4">{children}</div>
+        <OrganizationProvider organization={organization}>
+          <div className="flex flex-1 flex-col gap-4">{children}</div>
+        </OrganizationProvider>
       </SidebarInset>
     </SidebarProvider>
   );

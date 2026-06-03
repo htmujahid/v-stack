@@ -16,6 +16,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import pathsConfig from '@/config/paths.config';
+import { useOrganization } from '@/components/providers/organization-provider';
 import { formatDate } from '@/lib/format';
 
 import { TeamActions } from './team-actions';
@@ -38,10 +39,10 @@ interface TeamsTableProps {
     teams: Team[];
     activeMember: ActiveMember | null;
   }>;
-  orgSlug: string;
 }
 
-export function TeamsTable({ promises, orgSlug }: TeamsTableProps) {
+export function TeamsTable({ promises }: TeamsTableProps) {
+  const { slug: orgSlug } = useOrganization();
   const { teams, activeMember } = React.use(promises);
 
   const isOwnerOrAdmin =
@@ -88,7 +89,7 @@ export function TeamsTable({ promises, orgSlug }: TeamsTableProps) {
                   <TableCell>{formatDate(team.createdAt)}</TableCell>
                   {isOwnerOrAdmin && (
                     <TableCell>
-                      <TeamActions team={team} orgSlug={orgSlug} />
+                      <TeamActions team={team} />
                     </TableCell>
                   )}
                 </TableRow>

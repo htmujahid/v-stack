@@ -26,6 +26,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useOrganization } from '@/components/providers/organization-provider';
 import { authClient } from '@/lib/auth-client';
 import { cn } from '@/lib/utils';
 
@@ -33,13 +34,12 @@ import type { Invitation } from './invitations-table';
 
 interface InvitationsTableActionsProps {
   invitation: Invitation;
-  organizationId: string;
 }
 
 export function InvitationsTableActions({
   invitation,
-  organizationId,
 }: InvitationsTableActionsProps) {
+  const { id: organizationId } = useOrganization();
   const router = useRouter();
   const [resendPending, startResendTransition] = useTransition();
   const [open, setOpen] = useState(false);

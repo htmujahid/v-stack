@@ -1,43 +1,26 @@
 import * as React from 'react';
+import { cache } from 'react';
 
-import { cacheLife, cacheTag } from 'next/cache';
 import { headers } from 'next/headers';
 
 import { Shell } from '@/components/layout/shell';
 import { RolesTable } from '@/components/organization/roles-table';
 import { Skeleton } from '@/components/ui/skeleton';
+import { getOrganization } from '@/data/organization';
 import { auth } from '@/lib/auth';
 
 interface RolesPageProps {
   params: Promise<{ org: string }>;
 }
 
-async function getCachedOrganization(reqHeaders: Headers, slug: string) {
-  'use cache';
-  cacheLife('hours');
-  cacheTag(`organization-${slug}`);
-
-  return await auth.api.getFullOrganization({
-    headers: reqHeaders,
-    query: {
-      organizationSlug: slug,
-    },
-  });
-}
-
-async function getCachedRoles(reqHeaders: Headers, organizationId: string) {
-  'use cache';
-  cacheLife('hours');
-  cacheTag(`organization-roles-${organizationId}`);
-
+const getRoles = cache(async (organizationId: string) => {
+  const reqHeaders = await headers();
   const [rolesRes, activeMemberRes] = await Promise.all([
     auth.api.listOrgRoles({
       headers: reqHeaders,
       query: { organizationId },
     }),
-    auth.api.getActiveMember({
-      headers: reqHeaders,
-    }),
+    auth.api.getActiveMember({ headers: reqHeaders }),
   ]);
 
   return {
@@ -51,19 +34,18 @@ async function getCachedRoles(reqHeaders: Headers, organizationId: string) {
     }>,
     activeMember: activeMemberRes as { id: string; role: string } | null,
   };
-}
+});
 
 export default async function RolesPage({ params }: RolesPageProps) {
   const { org: slug } = await params;
-  const reqHeaders = await headers();
 
-  const organization = await getCachedOrganization(reqHeaders, slug);
+  const organization = await getOrganization(slug);
 
   if (!organization) {
     return null;
   }
 
-  const rolesPromise = getCachedRoles(reqHeaders, organization.id);
+  const rolesPromise = getRoles(organization.id);
 
   return (
     <Shell>
@@ -91,7 +73,7 @@ export default async function RolesPage({ params }: RolesPageProps) {
           </div>
         }
       >
-        <RolesTable promises={rolesPromise} orgSlug={slug} />
+        <RolesTable promises={rolesPromise} />
       </React.Suspense>
     </Shell>
   );

@@ -72,7 +72,6 @@ interface OrgMember {
 interface TeamMembersProps {
   teamId: string;
   teamName: string;
-  organizationId: string;
   teamMembers: TeamMember[];
   orgMembers: OrgMember[];
   isOwnerOrAdmin: boolean;
@@ -81,7 +80,6 @@ interface TeamMembersProps {
 export function TeamMembers({
   teamId,
   teamName,
-  organizationId: _organizationId,
   teamMembers,
   orgMembers,
   isOwnerOrAdmin,

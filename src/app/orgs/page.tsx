@@ -1,6 +1,6 @@
 import * as React from 'react';
+import { cache } from 'react';
 
-import { cacheLife, cacheTag } from 'next/cache';
 import { headers } from 'next/headers';
 import Link from 'next/link';
 
@@ -14,39 +14,20 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import pathsConfig from '@/config/paths.config';
+import { getOrganizations } from '@/data/organization';
 import { auth } from '@/lib/auth';
 
-async function getCachedUserInvitations(reqHeaders: Headers) {
-  'use cache';
-  cacheLife('hours');
-  cacheTag('user-invitations');
-
+const getUserInvitations = cache(async () => {
+  const reqHeaders = await headers();
   const invitations = await auth.api.listUserInvitations({
     headers: reqHeaders,
   });
-
   return invitations ?? [];
-}
-
-async function getCachedOrganizations(reqHeaders: Headers) {
-  'use cache';
-  cacheLife('hours');
-  cacheTag('organizations');
-
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-
-  const organizations = await auth.api.listOrganizations({
-    headers: reqHeaders,
-  });
-
-  return organizations ?? [];
-}
+});
 
 export default async function OrganizationsPage() {
-  const reqHeaders = await headers();
-
-  const organizationsPromise = getCachedOrganizations(reqHeaders);
-  const invitationsPromise = getCachedUserInvitations(reqHeaders);
+  const organizationsPromise = getOrganizations();
+  const invitationsPromise = getUserInvitations();
 
   return (
     <div className="flex min-h-screen flex-col">

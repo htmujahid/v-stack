@@ -22,6 +22,7 @@ import {
   FieldLabel,
 } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
+import { useOrganization } from '@/components/providers/organization-provider';
 import { authClient } from '@/lib/auth-client';
 
 const updateOrganizationSchema = z.object({
@@ -37,17 +38,8 @@ const updateOrganizationSchema = z.object({
 
 type UpdateOrganizationFormValues = z.infer<typeof updateOrganizationSchema>;
 
-interface OrganizationSettingsFormProps {
-  organization: {
-    id: string;
-    name: string;
-    slug: string;
-  };
-}
-
-export function OrganizationSettingsForm({
-  organization,
-}: OrganizationSettingsFormProps) {
+export function OrganizationSettingsForm() {
+  const organization = useOrganization();
   const router = useRouter();
   const form = useForm<UpdateOrganizationFormValues>({
     resolver: zodResolver(updateOrganizationSchema),

@@ -25,18 +25,12 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import pathsConfig from '@/config/paths.config';
+import { useOrganization } from '@/components/providers/organization-provider';
 import { authClient } from '@/lib/auth-client';
 import { cn } from '@/lib/utils';
 
-interface DeleteOrganizationDialogProps {
-  organizationId: string;
-  organizationName: string;
-}
-
-export function DeleteOrganizationDialog({
-  organizationId,
-  organizationName,
-}: DeleteOrganizationDialogProps) {
+export function DeleteOrganizationDialog() {
+  const { id: organizationId, name: organizationName } = useOrganization();
   const router = useRouter();
 
   const handleDelete = async () => {

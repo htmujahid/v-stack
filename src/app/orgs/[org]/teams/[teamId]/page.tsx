@@ -1,4 +1,3 @@
-import { cacheLife, cacheTag } from 'next/cache';
 import { headers } from 'next/headers';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -16,24 +15,12 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import pathsConfig from '@/config/paths.config';
+import { getOrganization } from '@/data/organization';
 import { auth } from '@/lib/auth';
 import { formatDate } from '@/lib/format';
 
 interface TeamDetailPageProps {
   params: Promise<{ org: string; teamId: string }>;
-}
-
-async function getCachedOrganization(reqHeaders: Headers, slug: string) {
-  'use cache';
-  cacheLife('hours');
-  cacheTag(`organization-${slug}`);
-
-  return await auth.api.getFullOrganization({
-    headers: reqHeaders,
-    query: {
-      organizationSlug: slug,
-    },
-  });
 }
 
 interface TeamMemberRaw {
@@ -55,10 +42,10 @@ interface OrgMember {
 }
 
 async function getTeamDetails(
-  reqHeaders: Headers,
   organizationId: string,
   teamId: string,
 ) {
+  const reqHeaders = await headers();
   const [teamsRes, membersRes, activeMemberRes] = await Promise.all([
     auth.api.listOrganizationTeams({
       headers: reqHeaders,
@@ -68,16 +55,13 @@ async function getTeamDetails(
       headers: reqHeaders,
       query: { organizationId },
     }),
-    auth.api.getActiveMember({
-      headers: reqHeaders,
-    }),
+    auth.api.getActiveMember({ headers: reqHeaders }),
   ]);
 
   const teams = teamsRes ?? [];
   const team = teams.find((t: { id: string }) => t.id === teamId);
   const orgMembers = (membersRes?.members ?? []) as OrgMember[];
 
-  // Get team members and enrich with user info from org members
   let teamMembers: Array<{
     id: string;
     odeMemberId: string;
@@ -98,7 +82,6 @@ async function getTeamDetails(
       });
       const rawTeamMembers = (teamMembersRes ?? []) as TeamMemberRaw[];
 
-      // Map team members to include user info from org members
       teamMembers = rawTeamMembers
         .map((tm) => {
           const orgMember = orgMembers.find((om) => om.user.id === tm.userId);
@@ -132,16 +115,14 @@ async function getTeamDetails(
 
 export default async function TeamDetailPage({ params }: TeamDetailPageProps) {
   const { org: slug, teamId } = await params;
-  const reqHeaders = await headers();
 
-  const organization = await getCachedOrganization(reqHeaders, slug);
+  const organization = await getOrganization(slug);
 
   if (!organization) {
     notFound();
   }
 
   const { team, teamMembers, orgMembers, activeMember } = await getTeamDetails(
-    reqHeaders,
     organization.id,
     teamId,
   );
@@ -203,7 +184,6 @@ export default async function TeamDetailPage({ params }: TeamDetailPageProps) {
           <TeamMembers
             teamId={team.id}
             teamName={team.name}
-            organizationId={organization.id}
             teamMembers={teamMembers}
             orgMembers={orgMembers}
             isOwnerOrAdmin={isOwnerOrAdmin}

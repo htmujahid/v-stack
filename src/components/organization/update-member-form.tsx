@@ -25,6 +25,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import pathsConfig from '@/config/paths.config';
+import { useOrganization } from '@/components/providers/organization-provider';
 import { authClient } from '@/lib/auth-client';
 
 const updateMemberSchema = z.object({
@@ -37,19 +38,16 @@ type UpdateMemberFormValues = z.infer<typeof updateMemberSchema>;
 
 interface UpdateMemberFormProps {
   memberId: string;
-  organizationId: string;
   currentRole: string;
   memberName: string;
-  orgSlug: string;
 }
 
 export function UpdateMemberForm({
   memberId,
-  organizationId,
   currentRole,
   memberName,
-  orgSlug,
 }: UpdateMemberFormProps) {
+  const { id: organizationId, slug: orgSlug } = useOrganization();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
 

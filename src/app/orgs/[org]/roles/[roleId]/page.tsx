@@ -1,57 +1,35 @@
-import { cacheLife, cacheTag } from 'next/cache';
+import { cache } from 'react';
+
 import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 
 import { Shell } from '@/components/layout/shell';
 import { EditRoleForm } from '@/components/organization/edit-role-form';
+import { getOrganization } from '@/data/organization';
 import { auth } from '@/lib/auth';
 
 interface EditRolePageProps {
   params: Promise<{ org: string; roleId: string }>;
 }
 
-async function getCachedOrganization(reqHeaders: Headers, slug: string) {
-  'use cache';
-  cacheLife('hours');
-  cacheTag(`organization-${slug}`);
-
-  return await auth.api.getFullOrganization({
+const getRole = cache(async (organizationId: string, roleId: string) => {
+  const reqHeaders = await headers();
+  return auth.api.getOrgRole({
     headers: reqHeaders,
-    query: {
-      organizationSlug: slug,
-    },
+    query: { roleId, organizationId },
   });
-}
-
-async function getCachedRole(
-  reqHeaders: Headers,
-  organizationId: string,
-  roleId: string,
-) {
-  'use cache';
-  cacheLife('hours');
-  cacheTag(`organization-role-${roleId}`);
-
-  return await auth.api.getOrgRole({
-    headers: reqHeaders,
-    query: {
-      roleId,
-      organizationId,
-    },
-  });
-}
+});
 
 export default async function EditRolePage({ params }: EditRolePageProps) {
   const { org: slug, roleId } = await params;
-  const reqHeaders = await headers();
 
-  const organization = await getCachedOrganization(reqHeaders, slug);
+  const organization = await getOrganization(slug);
 
   if (!organization) {
     return notFound();
   }
 
-  const role = await getCachedRole(reqHeaders, organization.id, roleId);
+  const role = await getRole(organization.id, roleId);
 
   if (!role) {
     return notFound();
@@ -68,7 +46,6 @@ export default async function EditRolePage({ params }: EditRolePageProps) {
           createdAt: role.createdAt,
           updatedAt: role.updatedAt ?? null,
         }}
-        orgSlug={slug}
       />
     </Shell>
   );

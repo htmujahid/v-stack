@@ -17,6 +17,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import pathsConfig from '@/config/paths.config';
+import { useOrganization } from '@/components/providers/organization-provider';
 import { formatDate } from '@/lib/format';
 
 import { RoleActions } from './role-actions';
@@ -40,10 +41,10 @@ interface RolesTableProps {
     roles: OrgRole[];
     activeMember: ActiveMember | null;
   }>;
-  orgSlug: string;
 }
 
-export function RolesTable({ promises, orgSlug }: RolesTableProps) {
+export function RolesTable({ promises }: RolesTableProps) {
+  const { slug: orgSlug } = useOrganization();
   const { roles, activeMember } = React.use(promises);
 
   const isOwnerOrAdmin =
@@ -124,7 +125,7 @@ export function RolesTable({ promises, orgSlug }: RolesTableProps) {
                     <TableCell>{formatDate(role.createdAt)}</TableCell>
                     {isOwnerOrAdmin && (
                       <TableCell>
-                        <RoleActions role={role} orgSlug={orgSlug} />
+                        <RoleActions role={role} />
                       </TableCell>
                     )}
                   </TableRow>

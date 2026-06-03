@@ -18,6 +18,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import pathsConfig from '@/config/paths.config';
+import { useOrganization } from '@/components/providers/organization-provider';
 import { formatDate } from '@/lib/format';
 
 export interface Member {
@@ -42,10 +43,10 @@ interface MembersTableProps {
     members: Member[];
     activeMember: ActiveMember | null;
   }>;
-  orgSlug: string;
 }
 
-export function MembersTable({ promises, orgSlug }: MembersTableProps) {
+export function MembersTable({ promises }: MembersTableProps) {
+  const { slug: orgSlug } = useOrganization();
   const { members, activeMember } = React.use(promises);
 
   const isOwnerOrAdmin =

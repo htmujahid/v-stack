@@ -22,6 +22,7 @@ import { Field, FieldError, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import pathsConfig from '@/config/paths.config';
+import { useOrganization } from '@/components/providers/organization-provider';
 import { authClient } from '@/lib/auth-client';
 import { statement } from '@/lib/organization';
 
@@ -48,10 +49,10 @@ interface OrgRole {
 
 interface EditRoleFormProps {
   role: OrgRole;
-  orgSlug: string;
 }
 
-export function EditRoleForm({ role, orgSlug }: EditRoleFormProps) {
+export function EditRoleForm({ role }: EditRoleFormProps) {
+  const { slug: orgSlug } = useOrganization();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 

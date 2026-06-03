@@ -29,6 +29,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import pathsConfig from '@/config/paths.config';
+import { useOrganization } from '@/components/providers/organization-provider';
 import { authClient } from '@/lib/auth-client';
 
 const inviteMemberSchema = z.object({
@@ -44,8 +45,6 @@ interface CustomRole {
 }
 
 interface InviteMemberFormProps {
-  organizationId: string;
-  orgSlug: string;
   customRoles?: CustomRole[];
 }
 
@@ -54,11 +53,8 @@ const DEFAULT_ROLES = [
   { value: 'admin', label: 'Admin' },
 ];
 
-export function InviteMemberForm({
-  organizationId,
-  orgSlug,
-  customRoles = [],
-}: InviteMemberFormProps) {
+export function InviteMemberForm({ customRoles = [] }: InviteMemberFormProps) {
+  const { id: organizationId, slug: orgSlug } = useOrganization();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 

@@ -27,14 +27,13 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import pathsConfig from '@/config/paths.config';
+import { useOrganization } from '@/components/providers/organization-provider';
 import { authClient } from '@/lib/auth-client';
 import { cn } from '@/lib/utils';
 
 interface MemberActionsProps {
   memberId: string;
   memberName: string;
-  organizationId: string;
-  orgSlug: string;
   isCurrentUser: boolean;
   canRemove: boolean;
 }
@@ -42,11 +41,10 @@ interface MemberActionsProps {
 export function MemberActions({
   memberId,
   memberName,
-  organizationId,
-  orgSlug,
   isCurrentUser,
   canRemove,
 }: MemberActionsProps) {
+  const { id: organizationId, slug: orgSlug } = useOrganization();
   const router = useRouter();
   const [leavePending, startLeaveTransition] = useTransition();
   const [removePending, startRemoveTransition] = useTransition();

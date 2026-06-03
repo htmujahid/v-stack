@@ -17,6 +17,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { useOrganization } from '@/components/providers/organization-provider';
 import type { FileWithPreview } from '@/hooks/use-file-upload';
 import { formatBytes, useFileUpload } from '@/hooks/use-file-upload';
 import { cn } from '@/lib/utils';
@@ -24,17 +25,9 @@ import { deleteOrganizationLogoAction } from '@/orpc/actions/organization/delete
 import { updateOrganizationLogoAction } from '@/orpc/actions/organization/update-organization-logo-action';
 import { uploadOrganizationLogoAction } from '@/orpc/actions/organization/upload-organization-logo-action';
 
-interface UpdateOrganizationLogoProps {
-  organizationId: string;
-  slug: string;
-  logo: string | null;
-}
+export function UpdateOrganizationLogo() {
+  const { id: organizationId, slug, logo } = useOrganization();
 
-export function UpdateOrganizationLogo({
-  organizationId,
-  slug,
-  logo,
-}: UpdateOrganizationLogoProps) {
   return (
     <Card>
       <CardHeader>
@@ -43,7 +36,7 @@ export function UpdateOrganizationLogo({
       </CardHeader>
       <CardContent>
         <UploadOrganizationLogoForm
-          imageUrl={logo}
+          imageUrl={logo ?? null}
           organizationId={organizationId}
           slug={slug}
         />

@@ -27,6 +27,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import pathsConfig from '@/config/paths.config';
+import { useOrganization } from '@/components/providers/organization-provider';
 import { authClient } from '@/lib/auth-client';
 import { statement } from '@/lib/organization';
 
@@ -46,15 +47,8 @@ const createRoleSchema = z.object({
 
 type CreateRoleFormValues = z.infer<typeof createRoleSchema>;
 
-interface CreateRoleFormProps {
-  organizationId: string;
-  orgSlug: string;
-}
-
-export function CreateRoleForm({
-  organizationId,
-  orgSlug,
-}: CreateRoleFormProps) {
+export function CreateRoleForm() {
+  const { id: organizationId, slug: orgSlug } = useOrganization();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 

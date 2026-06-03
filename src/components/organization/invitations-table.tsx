@@ -17,6 +17,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import pathsConfig from '@/config/paths.config';
+import { useOrganization } from '@/components/providers/organization-provider';
 import { formatDate } from '@/lib/format';
 
 import { InvitationsTableActions } from './invitations-table-actions';
@@ -31,15 +32,10 @@ export interface Invitation {
 
 interface InvitationsTableProps {
   promises: Promise<Invitation[]>;
-  orgSlug: string;
-  organizationId: string;
 }
 
-export function InvitationsTable({
-  promises,
-  orgSlug,
-  organizationId,
-}: InvitationsTableProps) {
+export function InvitationsTable({ promises }: InvitationsTableProps) {
+  const { slug: orgSlug } = useOrganization();
   const invitations = React.use(promises);
 
   return (
@@ -92,10 +88,7 @@ export function InvitationsTable({
                   </TableCell>
                   <TableCell>{formatDate(invitation.expiresAt)}</TableCell>
                   <TableCell>
-                    <InvitationsTableActions
-                      invitation={invitation}
-                      organizationId={organizationId}
-                    />
+                    <InvitationsTableActions invitation={invitation} />
                   </TableCell>
                 </TableRow>
               ))

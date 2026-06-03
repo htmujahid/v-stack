@@ -26,6 +26,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import pathsConfig from '@/config/paths.config';
+import { useOrganization } from '@/components/providers/organization-provider';
 import { authClient } from '@/lib/auth-client';
 import { cn } from '@/lib/utils';
 
@@ -33,10 +34,10 @@ import type { Team } from './teams-table';
 
 interface TeamActionsProps {
   team: Team;
-  orgSlug: string;
 }
 
-export function TeamActions({ team, orgSlug }: TeamActionsProps) {
+export function TeamActions({ team }: TeamActionsProps) {
+  const { slug: orgSlug } = useOrganization();
   const router = useRouter();
   const [showDeleteDialog, setShowDeleteDialog] = React.useState(false);
   const [isDeleting, setIsDeleting] = React.useState(false);

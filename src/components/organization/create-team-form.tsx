@@ -25,6 +25,7 @@ import {
 } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import pathsConfig from '@/config/paths.config';
+import { useOrganization } from '@/components/providers/organization-provider';
 import { authClient } from '@/lib/auth-client';
 
 const createTeamSchema = z.object({
@@ -36,15 +37,8 @@ const createTeamSchema = z.object({
 
 type CreateTeamFormValues = z.infer<typeof createTeamSchema>;
 
-interface CreateTeamFormProps {
-  organizationId: string;
-  orgSlug: string;
-}
-
-export function CreateTeamForm({
-  organizationId,
-  orgSlug,
-}: CreateTeamFormProps) {
+export function CreateTeamForm() {
+  const { id: organizationId, slug: orgSlug } = useOrganization();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
