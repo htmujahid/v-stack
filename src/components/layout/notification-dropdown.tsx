@@ -2,7 +2,7 @@
 
 import { Bell } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import {
   Popover,
   PopoverContent,
@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils';
 
 const notifications = [
   {
@@ -33,6 +34,13 @@ const notifications = [
     time: '3 hours ago',
     read: true,
   },
+  {
+    id: '4',
+    title: 'New order received',
+    description: 'Order #1235 has been placed',
+    time: '1 day ago',
+    read: true,
+  },
 ];
 
 export function NotificationDropdown() {
@@ -40,16 +48,19 @@ export function NotificationDropdown() {
 
   return (
     <Popover>
-      <PopoverTrigger asChild>
-        <Button size="icon-sm" variant="ghost" className="relative size-7">
-          <Bell className="size-4" />
-          {unreadCount > 0 && (
-            <span className="bg-primary text-primary-foreground absolute -top-1 -right-1 flex size-4 items-center justify-center rounded-full text-[10px]">
-              {unreadCount}
-            </span>
-          )}
-          <span className="sr-only">Notifications</span>
-        </Button>
+      <PopoverTrigger
+        className={cn(
+          buttonVariants({ variant: 'ghost', size: 'icon-sm' }),
+          'relative size-7',
+        )}
+      >
+        <Bell className="size-4" />
+        {unreadCount > 0 && (
+          <span className="bg-primary text-primary-foreground absolute -top-1 -right-1 flex size-4 items-center justify-center rounded-full text-[10px]">
+            {unreadCount}
+          </span>
+        )}
+        <span className="sr-only">Notifications</span>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-80 p-0">
         <div className="flex items-center justify-between p-4">
@@ -64,7 +75,7 @@ export function NotificationDropdown() {
             </Button>
           )}
         </div>
-        <Separator />
+        <Separator orientation="horizontal" />
         <ScrollArea className="h-72">
           {notifications.length === 0 ? (
             <div className="flex items-center justify-center p-6">
@@ -94,7 +105,7 @@ export function NotificationDropdown() {
             </div>
           )}
         </ScrollArea>
-        <Separator />
+        <Separator orientation="horizontal" />
         <div className="p-2">
           <Button variant="ghost" size="sm" className="w-full text-sm">
             View all notifications

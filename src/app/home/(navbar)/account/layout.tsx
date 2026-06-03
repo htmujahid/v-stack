@@ -1,19 +1,10 @@
-import { headers } from 'next/headers';
-
 import { AccountNav } from '@/components/account/account-nav';
-import { getSession } from '@/orpc/actions/auth/get-session';
 
 export default async function AccountLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getSession(await headers());
-
-  if (!session) {
-    return null;
-  }
-
   return (
     <div className="container mx-auto px-4">
       {/* Mobile: horizontal nav at top */}

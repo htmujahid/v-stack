@@ -4,7 +4,7 @@ import { useState } from 'react';
 
 import { toast } from 'sonner';
 
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -25,6 +25,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { authClient } from '@/lib/auth-client';
+import { cn } from '@/lib/utils';
 
 export function AccountDangerZone() {
   const [open, setOpen] = useState(false);
@@ -70,8 +71,10 @@ export function AccountDangerZone() {
       </CardContent>
       <CardFooter>
         <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
-            <Button variant="destructive">Delete Account</Button>
+          <DialogTrigger
+            className={cn(buttonVariants({ variant: 'destructive' }))}
+          >
+            Delete Account
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>

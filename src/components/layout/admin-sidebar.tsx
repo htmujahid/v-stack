@@ -4,7 +4,6 @@ import * as React from 'react';
 
 import Link from 'next/link';
 
-import { UserWithRole } from 'better-auth/plugins';
 import {
   Activity,
   Building2,
@@ -133,22 +132,19 @@ const data = {
 };
 
 export function AdminSidebar({
-  user,
   ...props
-}: React.ComponentProps<typeof Sidebar> & { user: UserWithRole }) {
+}: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible="icon" variant="inset" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
-              asChild
+              render={<Link href="/admin" />}
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
-              <Link href="/admin">
-                <Sparkles className="!size-5" />
-                <span className="text-base font-semibold">Acme Admin</span>
-              </Link>
+              <Sparkles className="!size-5" />
+              <span className="text-base font-semibold">Acme Admin</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
@@ -160,7 +156,7 @@ export function AdminSidebar({
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={user} />
+        <NavUser />
       </SidebarFooter>
     </Sidebar>
   );

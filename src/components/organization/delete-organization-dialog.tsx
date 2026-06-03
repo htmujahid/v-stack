@@ -16,7 +16,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -26,6 +26,7 @@ import {
 } from '@/components/ui/card';
 import pathsConfig from '@/config/paths.config';
 import { authClient } from '@/lib/auth-client';
+import { cn } from '@/lib/utils';
 
 interface DeleteOrganizationDialogProps {
   organizationId: string;
@@ -63,19 +64,20 @@ export function DeleteOrganizationDialog({
       </CardHeader>
       <CardContent>
         <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button variant="destructive">
-              <Trash2 className="mr-2 h-4 w-4" />
-              Delete Organization
-            </Button>
+          <AlertDialogTrigger
+            className={cn(buttonVariants({ variant: 'destructive' }))}
+          >
+            <Trash2 className="mr-2 h-4 w-4" />
+            Delete Organization
           </AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>Delete organization?</AlertDialogTitle>
               <AlertDialogDescription>
-                Are you sure you want to delete <strong>{organizationName}</strong>?
-                This action cannot be undone. All members will be removed and all
-                data associated with this organization will be permanently deleted.
+                Are you sure you want to delete{' '}
+                <strong>{organizationName}</strong>? This action cannot be
+                undone. All members will be removed and all data associated with
+                this organization will be permanently deleted.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

@@ -41,12 +41,12 @@ export function OrganizationsList({ promises }: OrganizationsListProps) {
             Create your first organization to start collaborating with your
             team.
           </p>
-          <Button asChild>
-            <Link href={pathsConfig.orgs.create}>
+          <Link href={pathsConfig.orgs.create}>
+            <Button>
               <Plus className="mr-2 h-4 w-4" />
               Create Organization
-            </Link>
-          </Button>
+            </Button>
+          </Link>
         </CardContent>
       </Card>
     );
@@ -63,7 +63,7 @@ export function OrganizationsList({ promises }: OrganizationsListProps) {
                 <Building2 className="h-6 w-6" />
               </AvatarFallback>
             </Avatar>
-            <div className="flex-1 min-w-0">
+            <div className="min-w-0 flex-1">
               <CardTitle className="truncate">{org.name}</CardTitle>
               <CardDescription className="truncate">
                 /{org.slug}
@@ -71,12 +71,12 @@ export function OrganizationsList({ promises }: OrganizationsListProps) {
             </div>
           </CardHeader>
           <CardContent>
-            <Button variant="outline" size="sm" asChild className="w-full">
-              <Link href={pathsConfig.orgs.detail(org.slug)}>
+            <Link href={pathsConfig.orgs.detail(org.slug)}>
+              <Button variant="outline" size="sm" className="w-full">
                 View Organization
                 <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
+              </Button>
+            </Link>
           </CardContent>
         </Card>
       ))}

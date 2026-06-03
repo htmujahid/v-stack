@@ -1,7 +1,8 @@
-import Link from "next/link";
-import { FileQuestion } from "lucide-react";
+import Link from 'next/link';
 
-import { Button } from "@/components/ui/button";
+import { FileQuestion } from 'lucide-react';
+
+import { Button } from '@/components/ui/button';
 import {
   Empty,
   EmptyContent,
@@ -9,7 +10,7 @@ import {
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
-} from "@/components/ui/empty";
+} from '@/components/ui/empty';
 
 export default function NotFound() {
   return (
@@ -25,9 +26,9 @@ export default function NotFound() {
           </EmptyDescription>
         </EmptyHeader>
         <EmptyContent>
-          <Button asChild>
-            <Link href="/">Go back home</Link>
-          </Button>
+          <Link href="/">
+            <Button>Go back home</Button>
+          </Link>
         </EmptyContent>
       </Empty>
     </div>

@@ -1,8 +1,7 @@
 import * as React from 'react';
 
-import { headers } from 'next/headers';
-
 import { cacheLife, cacheTag } from 'next/cache';
+import { headers } from 'next/headers';
 
 import { Shell } from '@/components/layout/shell';
 import { TeamsTable } from '@/components/organization/teams-table';

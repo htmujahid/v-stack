@@ -135,7 +135,10 @@ function UploadOrganizationLogoForm(props: {
   );
 }
 
-function getLogoFileName(organizationId: string, extension: string | undefined) {
+function getLogoFileName(
+  organizationId: string,
+  extension: string | undefined,
+) {
   return `${organizationId}.${extension}`;
 }
 

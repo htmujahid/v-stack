@@ -46,15 +46,18 @@ export function NavSecondary({
             }
             return (
               <SidebarMenuItem key={item.title}>
-                <SidebarMenuButton asChild disabled={item.disabled}>
-                  <Link
-                    href={item.url}
-                    target={item.target}
-                    aria-disabled={item.disabled}
-                  >
-                    <item.icon />
-                    <span>{item.title}</span>
-                  </Link>
+                <SidebarMenuButton
+                  render={
+                    <Link
+                      href={item.url}
+                      target={item.target}
+                      aria-disabled={item.disabled}
+                    />
+                  }
+                  disabled={item.disabled}
+                >
+                  <item.icon />
+                  <span>{item.title}</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             );

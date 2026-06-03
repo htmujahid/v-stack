@@ -1,7 +1,8 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { useTransition } from 'react';
+
+import { useRouter } from 'next/navigation';
 
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -34,7 +35,11 @@ export function AcceptInvitationForm({
         {
           onSuccess: (ctx) => {
             toast.success('Invitation accepted successfully');
-            router.push(pathsConfig.orgs.detail(ctx.data.member.organizationSlug ?? orgSlug));
+            router.push(
+              pathsConfig.orgs.detail(
+                ctx.data.member.organizationSlug ?? orgSlug,
+              ),
+            );
           },
           onError: ({ error }) => {
             toast.error(error.message);

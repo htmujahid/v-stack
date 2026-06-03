@@ -56,12 +56,12 @@ export function MembersTable({ promises, orgSlug }: MembersTableProps) {
       <div className="flex w-full items-center justify-between gap-2 p-1">
         <div className="flex-1" />
         {isOwnerOrAdmin && (
-          <Button asChild>
-            <Link href={pathsConfig.orgs.invite(orgSlug)}>
+          <Link href={pathsConfig.orgs.invite(orgSlug)}>
+            <Button>
               <Plus className="mr-2 h-4 w-4" />
               Invite Member
-            </Link>
-          </Button>
+            </Button>
+          </Link>
         )}
       </div>
       <div className="overflow-hidden rounded-md border">

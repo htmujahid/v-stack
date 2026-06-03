@@ -1,24 +1,22 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { useTransition } from 'react';
+
+import { useRouter } from 'next/navigation';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2 } from 'lucide-react';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
 import { Button } from '@/components/ui/button';
 import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldLabel,
+} from '@/components/ui/field';
 import {
   Select,
   SelectContent,
@@ -90,47 +88,46 @@ export function UpdateMemberForm({
   };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <FormField
-          control={form.control}
-          name="role"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Role</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a role" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="admin">Admin</SelectItem>
-                  <SelectItem value="member">Member</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormDescription>
-                Select the role for this member in the organization.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <div className="flex gap-3">
-          <Button type="submit" disabled={pending}>
-            {pending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Update Role
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => router.push(pathsConfig.orgs.members(orgSlug))}
-          >
-            Cancel
-          </Button>
-        </div>
-      </form>
-    </Form>
+    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <Controller
+        name="role"
+        control={form.control}
+        render={({ field, fieldState }) => (
+          <Field data-invalid={fieldState.invalid}>
+            <FieldLabel htmlFor={field.name}>Role</FieldLabel>
+            <Select
+              name={field.name}
+              value={field.value}
+              onValueChange={field.onChange}
+            >
+              <SelectTrigger id={field.name} aria-invalid={fieldState.invalid}>
+                <SelectValue placeholder="Select a role" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="admin">Admin</SelectItem>
+                <SelectItem value="member">Member</SelectItem>
+              </SelectContent>
+            </Select>
+            <FieldDescription>
+              Select the role for this member in the organization.
+            </FieldDescription>
+            {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+          </Field>
+        )}
+      />
+      <div className="flex gap-3">
+        <Button type="submit" disabled={pending}>
+          {pending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          Update Role
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => router.push(pathsConfig.orgs.members(orgSlug))}
+        >
+          Cancel
+        </Button>
+      </div>
+    </form>
   );
 }

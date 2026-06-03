@@ -1,13 +1,16 @@
-import { cacheLife, cacheTag } from 'next/cache';
+'use server';
 
 import { auth } from '@/lib/auth';
+import { actionContext, oa } from '@/orpc/middlewares';
 
-export async function getSession(headers: Headers) {
-  'use cache';
-  cacheLife('hours');
-  cacheTag('getSession');
+export const getSession = oa
+  .handler(async ({ context }) => {
+    const session = await auth.api.getSession({
+      headers: context.headers,
+    });
 
-  return await auth.api.getSession({
-    headers,
+    return session;
+  })
+  .actionable({
+    context: actionContext,
   });
-}

@@ -19,18 +19,18 @@ export function Hero() {
             16, Better Auth, Drizzle, and Shadcn UI.
           </p>
           <div className="mt-10 flex flex-col gap-4 sm:flex-row">
-            <Button size="lg" asChild>
-              <Link href="/auth/sign-up">Try the Demo</Link>
-            </Button>
-            <Button variant="outline" size="lg" asChild>
-              <Link
-                href="https://github.com/htmujahid/next-bard"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
+            <Link href="/auth/sign-up">
+              <Button size="lg">Try the Demo</Button>
+            </Link>
+            <Link
+              href="https://github.com/htmujahid/next-bard"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Button variant="outline" size="lg">
                 View on GitHub
-              </Link>
-            </Button>
+              </Button>
+            </Link>
           </div>
           <div className="text-muted-foreground mt-12 flex flex-wrap items-center justify-center gap-x-8 gap-y-4 text-sm">
             <span>Next.js 16</span>

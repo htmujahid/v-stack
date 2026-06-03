@@ -1,9 +1,9 @@
 import * as React from 'react';
 
-import Link from 'next/link';
-import { headers } from 'next/headers';
-
 import { cacheLife, cacheTag } from 'next/cache';
+import { headers } from 'next/headers';
+import Link from 'next/link';
+
 import { Plus } from 'lucide-react';
 
 import { SiteHeader } from '@/components/layout/site-header';
@@ -11,15 +11,10 @@ import { Footer } from '@/components/marketing/footer';
 import { OrganizationsList } from '@/components/organization/organizations-list';
 import { UserInvitationsList } from '@/components/organization/user-invitations-list';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-} from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import pathsConfig from '@/config/paths.config';
 import { auth } from '@/lib/auth';
-import { getSession } from '@/orpc/actions/auth/get-session';
 
 async function getCachedUserInvitations(reqHeaders: Headers) {
   'use cache';
@@ -49,14 +44,13 @@ async function getCachedOrganizations(reqHeaders: Headers) {
 
 export default async function OrganizationsPage() {
   const reqHeaders = await headers();
-  const session = await getSession(reqHeaders);
 
   const organizationsPromise = getCachedOrganizations(reqHeaders);
   const invitationsPromise = getCachedUserInvitations(reqHeaders);
 
   return (
     <div className="flex min-h-screen flex-col">
-      <SiteHeader session={session?.session ?? null} user={session?.user ?? null} />
+      <SiteHeader />
       <main className="container mx-auto flex-1 px-4 py-8">
         <div className="space-y-8">
           <div className="flex items-center justify-between">
@@ -68,7 +62,7 @@ export default async function OrganizationsPage() {
                 Manage your organizations and team collaborations.
               </p>
             </div>
-            <Button asChild>
+            <Button>
               <Link href={pathsConfig.orgs.create}>
                 <Plus className="mr-2 h-4 w-4" />
                 Create Organization

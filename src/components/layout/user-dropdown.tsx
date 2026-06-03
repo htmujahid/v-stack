@@ -14,8 +14,8 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { useAuth } from '@/components/providers/auth-provider';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,19 +30,10 @@ import { authClient } from '@/lib/auth-client';
 
 import { If } from '../misc/if';
 
-interface UserDropdownProps {
-  user: {
-    name: string;
-    email: string;
-    image?: string | null;
-    role?: string | null;
-  };
-  session?: {
-    impersonatedBy?: string | null;
-  } | null;
-}
-
-export function UserDropdown({ user, session }: UserDropdownProps) {
+export function UserDropdown() {
+  const auth = useAuth();
+  const user = auth?.user;
+  const session = auth?.session;
   const handleSignOut = async () => {
     await authClient.signOut();
     window.location.href = '/';
@@ -61,66 +52,66 @@ export function UserDropdown({ user, session }: UserDropdownProps) {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative h-9 w-9 rounded-full">
-          <Avatar className="h-9 w-9">
-            <AvatarImage src={user.image ?? undefined} alt={user.name} />
-            <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
-          </Avatar>
-        </Button>
+      <DropdownMenuTrigger className="hover:bg-accent relative flex h-9 w-9 items-center justify-center rounded-full focus-visible:outline-none">
+        <Avatar className="h-9 w-9">
+          <AvatarImage src={user?.image ?? undefined} alt={user?.name} />
+          <AvatarFallback>{user?.name?.charAt(0)}</AvatarFallback>
+        </Avatar>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56" align="end" forceMount>
-        <DropdownMenuLabel className="font-normal">
-          <div className="flex flex-col space-y-1">
-            <p className="text-sm leading-none font-medium">{user.name}</p>
-            <p className="text-muted-foreground text-xs leading-none">
-              {user.email}
-            </p>
-          </div>
-        </DropdownMenuLabel>
-        <If condition={user?.role?.split(',').includes('admin')}>
+      <DropdownMenuContent className="w-56" align="end">
+        <DropdownMenuGroup>
+          <DropdownMenuLabel className="font-normal">
+            <div className="flex flex-col space-y-1">
+              <p className="text-sm leading-none font-medium">{user?.name}</p>
+              <p className="text-muted-foreground text-xs leading-none">
+                {user?.email}
+              </p>
+            </div>
+          </DropdownMenuLabel>
+        </DropdownMenuGroup>
+        <If condition={user?.role?.split(',').includes('admin') ?? false}>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
-            <DropdownMenuItem asChild>
-              <Link href={pathsConfig.admin.root}>
+            <Link href={pathsConfig.admin.root}>
+              <DropdownMenuItem>
                 <Sparkles className="h-4 w-4" />
                 Admin
-              </Link>
-            </DropdownMenuItem>
+              </DropdownMenuItem>
+            </Link>
           </DropdownMenuGroup>
         </If>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem asChild>
-            <Link href={pathsConfig.app.home}>
+          <Link href={pathsConfig.app.home}>
+            <DropdownMenuItem>
               <LayoutDashboard className="h-4 w-4" />
               Dashboard
-            </Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem asChild>
-            <Link href={pathsConfig.orgs.root}>
+            </DropdownMenuItem>
+          </Link>
+          <Link href={pathsConfig.orgs.root}>
+            <DropdownMenuItem>
               <Building2 className="h-4 w-4" />
               Organizations
-            </Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem asChild>
-            <Link href={pathsConfig.app.account}>
+            </DropdownMenuItem>
+          </Link>
+          <Link href={pathsConfig.app.account}>
+            <DropdownMenuItem>
               <User className="h-4 w-4" />
               Account
-            </Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem asChild>
-            <Link href={pathsConfig.app.security}>
+            </DropdownMenuItem>
+          </Link>
+          <Link href={pathsConfig.app.security}>
+            <DropdownMenuItem>
               <Shield className="h-4 w-4" />
               Security
-            </Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem asChild>
-            <Link href={pathsConfig.app.preferences}>
+            </DropdownMenuItem>
+          </Link>
+          <Link href={pathsConfig.app.preferences}>
+            <DropdownMenuItem>
               <Palette className="h-4 w-4" />
               Preferences
-            </Link>
-          </DropdownMenuItem>
+            </DropdownMenuItem>
+          </Link>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         {session?.impersonatedBy ? (

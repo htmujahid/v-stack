@@ -1,13 +1,18 @@
-import { createAccessControl } from "better-auth/plugins/access";
-import { defaultStatements, ownerAc, adminAc, memberAc } from 'better-auth/plugins/organization/access'
+import { createAccessControl } from 'better-auth/plugins/access';
+import {
+  adminAc,
+  defaultStatements,
+  memberAc,
+  ownerAc,
+} from 'better-auth/plugins/organization/access';
 
 export const statement = {
-    ...defaultStatements,
-    task: ['create', 'read', 'update', 'delete'],
-    // ac resource is required for dynamic access control (managing roles)
-    ac: ['create', 'read', 'update', 'delete'],
-    // team resource for managing teams
-    team: ['create', 'read', 'update', 'delete'],
+  ...defaultStatements,
+  task: ['create', 'read', 'update', 'delete'],
+  // ac resource is required for dynamic access control (managing roles)
+  ac: ['create', 'read', 'update', 'delete'],
+  // team resource for managing teams
+  team: ['create', 'read', 'update', 'delete'],
 } as const;
 
 export type OrgPermissions = {

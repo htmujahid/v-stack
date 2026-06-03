@@ -5,7 +5,7 @@ import * as React from 'react';
 import { useRouter } from 'next/navigation';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
@@ -18,14 +18,11 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldLabel,
+} from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import pathsConfig from '@/config/paths.config';
 import { authClient } from '@/lib/auth-client';
@@ -90,64 +87,66 @@ export function CreateOrganizationForm() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Organization Name</FormLabel>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      placeholder="My Organization"
-                      onChange={(e) => {
-                        field.onChange(e);
-                        if (!isSlugManuallyEdited) {
-                          form.setValue('slug', generateSlug(e.target.value));
-                        }
-                      }}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="slug"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Slug</FormLabel>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      placeholder="my-organization"
-                      onChange={(e) => {
-                        field.onChange(e);
-                        setIsSlugManuallyEdited(true);
-                      }}
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    This will be used in the URL for your organization.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <Button
-              type="submit"
-              disabled={form.formState.isSubmitting}
-              className="w-fit"
-            >
-              {form.formState.isSubmitting
-                ? 'Creating...'
-                : 'Create Organization'}
-            </Button>
-          </form>
-        </Form>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4">
+          <Controller
+            name="name"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor={field.name}>Organization Name</FieldLabel>
+                <Input
+                  {...field}
+                  id={field.name}
+                  placeholder="My Organization"
+                  aria-invalid={fieldState.invalid}
+                  onChange={(e) => {
+                    field.onChange(e);
+                    if (!isSlugManuallyEdited) {
+                      form.setValue('slug', generateSlug(e.target.value));
+                    }
+                  }}
+                />
+                {fieldState.invalid && (
+                  <FieldError errors={[fieldState.error]} />
+                )}
+              </Field>
+            )}
+          />
+          <Controller
+            name="slug"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor={field.name}>Slug</FieldLabel>
+                <Input
+                  {...field}
+                  id={field.name}
+                  placeholder="my-organization"
+                  aria-invalid={fieldState.invalid}
+                  onChange={(e) => {
+                    field.onChange(e);
+                    setIsSlugManuallyEdited(true);
+                  }}
+                />
+                <FieldDescription>
+                  This will be used in the URL for your organization.
+                </FieldDescription>
+                {fieldState.invalid && (
+                  <FieldError errors={[fieldState.error]} />
+                )}
+              </Field>
+            )}
+          />
+          <Button
+            type="submit"
+            disabled={form.formState.isSubmitting}
+            className="w-fit"
+          >
+            {form.formState.isSubmitting
+              ? 'Creating...'
+              : 'Create Organization'}
+          </Button>
+        </form>
       </CardContent>
     </Card>
   );

@@ -1,8 +1,6 @@
-import { notFound, redirect } from 'next/navigation';
-import { headers } from 'next/headers';
-
 import { cacheLife, cacheTag } from 'next/cache';
-import { UserWithRole } from 'better-auth/plugins';
+import { headers } from 'next/headers';
+import { notFound } from 'next/navigation';
 
 import { AppBreadcrumbs } from '@/components/layout/app-breadcrumb';
 import { NotificationDropdown } from '@/components/layout/notification-dropdown';
@@ -12,9 +10,8 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from '@/components/ui/sidebar';
-import pathsConfig from '@/config/paths.config';
 import { auth } from '@/lib/auth';
-import { getSession } from '@/orpc/actions/auth/get-session';
+import { requireAuth } from '@/orpc/proxy';
 
 interface OrgLayoutProps {
   children: React.ReactNode;
@@ -26,15 +23,17 @@ async function getCachedOrganization(reqHeaders: Headers, slug: string) {
   cacheLife('hours');
   cacheTag(`organization-${slug}`);
 
-  const organization = await auth.api.getFullOrganization({
-    headers: reqHeaders,
-    query: {
-      organizationSlug: slug,
-    },
-  }).catch((error) => {
-    console.error('Error getting organization', error);
-    return null;
-  });
+  const organization = await auth.api
+    .getFullOrganization({
+      headers: reqHeaders,
+      query: {
+        organizationSlug: slug,
+      },
+    })
+    .catch((error) => {
+      console.error('Error getting organization', error);
+      return null;
+    });
 
   return organization;
 }
@@ -44,12 +43,14 @@ async function getCachedOrganizations(reqHeaders: Headers) {
   cacheLife('hours');
   cacheTag('organizations');
 
-  const organizations = await auth.api.listOrganizations({
-    headers: reqHeaders,
-  }).catch((error) => {
-    console.error('Error getting organizations', error);
-    return [];
-  });
+  const organizations = await auth.api
+    .listOrganizations({
+      headers: reqHeaders,
+    })
+    .catch((error) => {
+      console.error('Error getting organizations', error);
+      return [];
+    });
 
   return organizations ?? [];
 }
@@ -57,11 +58,7 @@ async function getCachedOrganizations(reqHeaders: Headers) {
 export default async function OrgLayout({ children, params }: OrgLayoutProps) {
   const { org: slug } = await params;
   const reqHeaders = await headers();
-  const session = await getSession(reqHeaders);
-
-  if (!session) {
-    redirect(pathsConfig.auth.signIn);
-  }
+  await requireAuth();
 
   const [organization, organizations] = await Promise.all([
     getCachedOrganization(reqHeaders, slug),
@@ -90,7 +87,6 @@ export default async function OrgLayout({ children, params }: OrgLayoutProps) {
       }
     >
       <OrgSidebar
-        user={session.user as UserWithRole}
         organization={{
           id: organization.id,
           name: organization.name,

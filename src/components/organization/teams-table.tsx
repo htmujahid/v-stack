@@ -56,12 +56,12 @@ export function TeamsTable({ promises, orgSlug }: TeamsTableProps) {
           </p>
         </div>
         {isOwnerOrAdmin && (
-          <Button asChild>
-            <Link href={pathsConfig.orgs.createTeam(orgSlug)}>
+          <Link href={pathsConfig.orgs.createTeam(orgSlug)}>
+            <Button>
               <Plus className="mr-2 h-4 w-4" />
               Create Team
-            </Link>
-          </Button>
+            </Button>
+          </Link>
         )}
       </div>
       <div className="overflow-hidden rounded-md border">

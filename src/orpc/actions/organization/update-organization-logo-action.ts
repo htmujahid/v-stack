@@ -2,11 +2,11 @@
 
 import { updateTag } from 'next/cache';
 
+import { onSuccess } from '@orpc/server';
 import { z } from 'zod';
 
 import { auth } from '@/lib/auth';
 import { actionContext, oa } from '@/orpc/middlewares';
-import { onSuccess } from '@orpc/server';
 
 export const updateOrganizationLogoAction = oa
   .input(
@@ -28,7 +28,6 @@ export const updateOrganizationLogoAction = oa
     });
 
     return { input };
-
   })
   .actionable({
     context: actionContext,
@@ -37,5 +36,5 @@ export const updateOrganizationLogoAction = oa
         updateTag(`organization-${input.slug}`);
         updateTag('organizations');
       }),
-    ]
+    ],
   });

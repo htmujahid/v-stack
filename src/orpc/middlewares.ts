@@ -2,8 +2,8 @@ import { headers } from 'next/headers';
 
 import { ORPCError, os } from '@orpc/server';
 
-import { auth } from '@/lib/auth';
 import type { Permissions, Role } from '@/lib/admin';
+import { auth } from '@/lib/auth';
 
 import { Context } from './context';
 

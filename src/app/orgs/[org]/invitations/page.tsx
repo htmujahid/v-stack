@@ -1,8 +1,7 @@
 import * as React from 'react';
 
-import { headers } from 'next/headers';
-
 import { cacheLife, cacheTag } from 'next/cache';
+import { headers } from 'next/headers';
 
 import { Shell } from '@/components/layout/shell';
 import { InvitationsTable } from '@/components/organization/invitations-table';
@@ -71,7 +70,7 @@ export default async function InvitationsPage({
               <Skeleton className="h-9 w-32" />
             </div>
             <div className="overflow-hidden rounded-md border">
-              <div className="p-4 space-y-4">
+              <div className="space-y-4 p-4">
                 {[...Array(5)].map((_, i) => (
                   <div key={i} className="flex items-center gap-4">
                     <Skeleton className="h-4 w-48" />

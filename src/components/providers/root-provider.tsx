@@ -1,5 +1,3 @@
-import { headers } from 'next/headers';
-
 import { ThemeProvider } from 'next-themes';
 import { NuqsAdapter } from 'nuqs/adapters/next/app';
 
@@ -13,14 +11,14 @@ import { getSession } from '@/orpc/actions/auth/get-session';
 import { ReactQueryProvider } from './react-query-provider';
 
 export async function RootProviders({ children }: React.PropsWithChildren) {
-  const session = await getSession(await headers());
+  const [, session] = await getSession();
   const { language } = await createI18nServerInstance();
   const theme = (await getRootTheme()) ?? appConfig.theme;
 
   return (
     <ReactQueryProvider>
       <I18nProvider lang={language}>
-        <AuthProvider auth={session}>
+        <AuthProvider auth={session ?? null}>
           <NuqsAdapter>
             <ThemeProvider
               attribute="class"

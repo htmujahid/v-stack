@@ -5,7 +5,7 @@ import * as React from 'react';
 import { useRouter } from 'next/navigation';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
@@ -18,14 +18,11 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldLabel,
+} from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import pathsConfig from '@/config/paths.config';
 import { authClient } from '@/lib/auth-client';
@@ -49,7 +46,6 @@ export function CreateTeamForm({
   orgSlug,
 }: CreateTeamFormProps) {
   const router = useRouter();
-
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   const form = useForm<CreateTeamFormValues>({
@@ -90,43 +86,42 @@ export function CreateTeamForm({
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Team Name</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="e.g., Engineering, Marketing, Design"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Choose a descriptive name for your team.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="flex gap-3">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => router.push(pathsConfig.orgs.teams(orgSlug))}
-                disabled={isSubmitting}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? 'Creating...' : 'Create Team'}
-              </Button>
-            </div>
-          </form>
-        </Form>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <Controller
+            name="name"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor={field.name}>Team Name</FieldLabel>
+                <Input
+                  {...field}
+                  id={field.name}
+                  placeholder="e.g., Engineering, Marketing, Design"
+                  aria-invalid={fieldState.invalid}
+                />
+                <FieldDescription>
+                  Choose a descriptive name for your team.
+                </FieldDescription>
+                {fieldState.invalid && (
+                  <FieldError errors={[fieldState.error]} />
+                )}
+              </Field>
+            )}
+          />
+          <div className="flex gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => router.push(pathsConfig.orgs.teams(orgSlug))}
+              disabled={isSubmitting}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? 'Creating...' : 'Create Team'}
+            </Button>
+          </div>
+        </form>
       </CardContent>
     </Card>
   );

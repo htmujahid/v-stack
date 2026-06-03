@@ -54,7 +54,7 @@ const pathsConfig: PathsConfig = {
     app: {
       home: '/home',
       account: '/home/account',
-      security: '/home/security',
+      security: '/home/account/security',
       preferences: '/home/preferences',
     },
     admin: {
@@ -82,7 +82,8 @@ const pathsConfig: PathsConfig = {
     acceptInvitation: (invitationId: string) => `/orgs/accept/${invitationId}`,
     teams: (slug: string) => `/orgs/${slug}/teams`,
     createTeam: (slug: string) => `/orgs/${slug}/teams/create`,
-    teamDetail: (slug: string, teamId: string) => `/orgs/${slug}/teams/${teamId}`,
+    teamDetail: (slug: string, teamId: string) =>
+      `/orgs/${slug}/teams/${teamId}`,
   },
 };
 

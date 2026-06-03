@@ -182,12 +182,12 @@ export default async function AdminPage() {
               Latest user registrations in your application.
             </CardDescription>
           </div>
-          <Button variant="outline" size="sm" asChild>
-            <Link href="/admin/users">
+          <Link href="/admin/users">
+            <Button variant="outline" size="sm">
               View All
               <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
-          </Button>
+            </Button>
+          </Link>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">

@@ -49,14 +49,15 @@ export function NavDocuments({ items }: { items: Array<NavDocumentItem> }) {
           }
           return (
             <SidebarMenuItem key={item.name}>
-              <SidebarMenuButton asChild disabled={item.disabled}>
-                <Link href={item.url} aria-disabled={item.disabled}>
-                  <item.icon />
-                  <span>{item.name}</span>
-                </Link>
+              <SidebarMenuButton
+                render={<Link href={item.url} aria-disabled={item.disabled} />}
+                disabled={item.disabled}
+              >
+                <item.icon />
+                <span>{item.name}</span>
               </SidebarMenuButton>
               <DropdownMenu>
-                <DropdownMenuTrigger asChild>
+                <DropdownMenuTrigger>
                   <SidebarMenuAction
                     showOnHover
                     className="data-[state=open]:bg-accent rounded-sm"

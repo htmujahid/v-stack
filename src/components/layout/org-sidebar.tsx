@@ -2,7 +2,6 @@
 
 import * as React from 'react';
 
-import { UserWithRole } from 'better-auth/plugins';
 import {
   HelpCircle,
   LayoutDashboard,
@@ -33,12 +32,15 @@ interface Organization {
 }
 
 interface OrgSidebarProps extends React.ComponentProps<typeof Sidebar> {
-  user: UserWithRole;
   organization: Organization;
   organizations: Organization[];
 }
 
-export function OrgSidebar({ user, organization, organizations, ...props }: OrgSidebarProps) {
+export function OrgSidebar({
+  organization,
+  organizations,
+  ...props
+}: OrgSidebarProps) {
   const navTop = [
     {
       title: 'Overview',
@@ -83,14 +85,17 @@ export function OrgSidebar({ user, organization, organizations, ...props }: OrgS
   return (
     <Sidebar collapsible="icon" variant="inset" {...props}>
       <SidebarHeader>
-        <OrgSwitcher organization={organization} organizations={organizations} />
+        <OrgSwitcher
+          organization={organization}
+          organizations={organizations}
+        />
       </SidebarHeader>
       <SidebarContent>
         <NavPrimary items={navTop} />
         <NavSecondary items={navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={user} />
+        <NavUser />
       </SidebarFooter>
     </Sidebar>
   );

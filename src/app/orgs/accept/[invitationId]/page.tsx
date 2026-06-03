@@ -34,7 +34,9 @@ export default async function AcceptInvitationPage({
 
   if (!session?.user) {
     const redirectUrl = pathsConfig.orgs.acceptInvitation(invitationId);
-    redirect(`${pathsConfig.auth.signIn}?redirect=${encodeURIComponent(redirectUrl)}`);
+    redirect(
+      `${pathsConfig.auth.signIn}?redirect=${encodeURIComponent(redirectUrl)}`,
+    );
   }
 
   let invitation;
@@ -73,12 +75,15 @@ export default async function AcceptInvitationPage({
                 <AlertCircle className="h-4 w-4" />
                 <AlertTitle>Access Denied</AlertTitle>
                 <AlertDescription>
-                  You&apos;re signed in as <strong>{session.user.email}</strong>,
-                  but this invitation was sent to a different email address.
+                  You&apos;re signed in as <strong>{session.user.email}</strong>
+                  , but this invitation was sent to a different email address.
                 </AlertDescription>
               </Alert>
               <div className="text-muted-foreground text-center text-sm">
-                <p>Please sign out and sign in with the correct account to accept this invitation.</p>
+                <p>
+                  Please sign out and sign in with the correct account to accept
+                  this invitation.
+                </p>
               </div>
               <div className="flex flex-col gap-3">
                 <SignOutButton
@@ -87,9 +92,11 @@ export default async function AcceptInvitationPage({
                   <LogOut className="mr-2 h-4 w-4" />
                   Sign out and switch account
                 </SignOutButton>
-                <Button variant="outline" asChild className="w-full">
-                  <Link href={pathsConfig.app.home}>Go to Dashboard</Link>
-                </Button>
+                <Link href={pathsConfig.app.home}>
+                  <Button variant="outline" className="w-full">
+                    Go to Dashboard
+                  </Button>
+                </Link>
               </div>
             </CardContent>
           </Card>

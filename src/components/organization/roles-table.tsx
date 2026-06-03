@@ -58,12 +58,12 @@ export function RolesTable({ promises, orgSlug }: RolesTableProps) {
           </p>
         </div>
         {isOwnerOrAdmin && (
-          <Button asChild>
-            <Link href={pathsConfig.orgs.createRole(orgSlug)}>
+          <Link href={pathsConfig.orgs.createRole(orgSlug)}>
+            <Button>
               <Plus className="mr-2 h-4 w-4" />
               Create Role
-            </Link>
-          </Button>
+            </Button>
+          </Link>
         )}
       </div>
       <div className="overflow-hidden rounded-md border">

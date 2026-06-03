@@ -1,7 +1,3 @@
-import { headers } from 'next/headers';
-
-import { UserWithRole } from 'better-auth/plugins';
-
 import { AppBreadcrumbs } from '@/components/layout/app-breadcrumb';
 import { NotificationDropdown } from '@/components/layout/notification-dropdown';
 import { UserSidebar } from '@/components/layout/user-sidebar';
@@ -10,15 +6,12 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from '@/components/ui/sidebar';
-import { getSession } from '@/orpc/actions/auth/get-session';
 
 export default async function HomeSidebarLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getSession(await headers())!;
-
   return (
     <SidebarProvider
       style={
@@ -28,7 +21,7 @@ export default async function HomeSidebarLayout({
         } as React.CSSProperties
       }
     >
-      <UserSidebar user={session?.user as UserWithRole} />
+      <UserSidebar />
       <SidebarInset>
         <header className="flex h-(--header-height) shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height)">
           <div className="flex w-full items-center gap-1 px-4">

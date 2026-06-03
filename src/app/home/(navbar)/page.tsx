@@ -12,7 +12,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import pathsConfig from '@/config/paths.config';
-import { requireSession } from '@/orpc/actions/user/require-session';
+import { requireSession } from '@/orpc/actions/auth/require-session';
 
 export default async function HomePage() {
   const [error, session] = await requireSession();
@@ -44,11 +44,13 @@ export default async function HomePage() {
             <CardDescription className="mb-4">
               Manage your tasks and track progress.
             </CardDescription>
-            <Button variant="outline" size="sm" asChild>
-              <Link href="/home/tasks">
-                View Tasks
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
+            <Button
+              variant="outline"
+              size="sm"
+              render={<Link href="/home/tasks" />}
+            >
+              View Tasks
+              <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </CardContent>
         </Card>
@@ -62,11 +64,13 @@ export default async function HomePage() {
             <CardDescription className="mb-4">
               Update your profile and email settings.
             </CardDescription>
-            <Button variant="outline" size="sm" asChild>
-              <Link href="/home/account">
-                Manage Account
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
+            <Button
+              variant="outline"
+              size="sm"
+              render={<Link href="/home/account" />}
+            >
+              Manage Account
+              <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </CardContent>
         </Card>
@@ -80,11 +84,13 @@ export default async function HomePage() {
             <CardDescription className="mb-4">
               Password, sessions, and two-factor auth.
             </CardDescription>
-            <Button variant="outline" size="sm" asChild>
-              <Link href="/home/security">
-                Security Settings
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
+            <Button
+              variant="outline"
+              size="sm"
+              render={<Link href="/home/account/security" />}
+            >
+              Security Settings
+              <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </CardContent>
         </Card>

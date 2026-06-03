@@ -6,7 +6,8 @@ import { Loader2, ShieldCheck, ShieldOff } from 'lucide-react';
 import QRCode from 'react-qr-code';
 import { toast } from 'sonner';
 
-import { Button } from '@/components/ui/button';
+import { useAuth } from '@/components/providers/auth-provider';
+import { Button, buttonVariants } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -19,12 +20,11 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { authClient } from '@/lib/auth-client';
+import { cn } from '@/lib/utils';
 
-export function TwoFactorEnableDisable({
-  session,
-}: {
-  session: typeof authClient.$Infer.Session;
-}) {
+export function TwoFactorEnableDisable() {
+  const auth = useAuth();
+  const session = auth;
   const router = useRouter();
   const [twoFactorDialog, setTwoFactorDialog] = useState(false);
   const [twoFactorVerifyURI, setTwoFactorVerifyURI] = useState('');
@@ -33,20 +33,22 @@ export function TwoFactorEnableDisable({
 
   return (
     <Dialog open={twoFactorDialog} onOpenChange={setTwoFactorDialog}>
-      <DialogTrigger asChild>
-        <Button
-          variant={session?.user.twoFactorEnabled ? 'destructive' : 'outline'}
-          className="gap-2"
-        >
-          {session?.user.twoFactorEnabled ? (
-            <ShieldOff size={16} />
-          ) : (
-            <ShieldCheck size={16} />
-          )}
-          <span className="text-xs md:text-sm">
-            {session?.user.twoFactorEnabled ? 'Disable 2FA' : 'Enable 2FA'}
-          </span>
-        </Button>
+      <DialogTrigger
+        className={cn(
+          buttonVariants({
+            variant: session?.user.twoFactorEnabled ? 'destructive' : 'outline',
+          }),
+          'gap-2',
+        )}
+      >
+        {session?.user.twoFactorEnabled ? (
+          <ShieldOff size={16} />
+        ) : (
+          <ShieldCheck size={16} />
+        )}
+        <span className="text-xs md:text-sm">
+          {session?.user.twoFactorEnabled ? 'Disable 2FA' : 'Enable 2FA'}
+        </span>
       </DialogTrigger>
       <DialogContent className="w-11/12 sm:max-w-[425px]">
         <DialogHeader>

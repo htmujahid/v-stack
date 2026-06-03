@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -44,6 +44,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { authClient } from '@/lib/auth-client';
+import { cn } from '@/lib/utils';
 
 interface TeamMember {
   id: string;
@@ -157,17 +158,13 @@ export function TeamMembers({
           <div className="flex items-center justify-between">
             <div>
               <CardTitle>Team Members</CardTitle>
-              <CardDescription>
-                Members who belong to this team
-              </CardDescription>
+              <CardDescription>Members who belong to this team</CardDescription>
             </div>
             {isOwnerOrAdmin && availableMembers.length > 0 && (
               <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button size="sm">
-                    <Plus className="mr-2 h-4 w-4" />
-                    Add Member
-                  </Button>
+                <DialogTrigger className={cn(buttonVariants({ size: 'sm' }))}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add Member
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
@@ -178,7 +175,9 @@ export function TeamMembers({
                   </DialogHeader>
                   <Select
                     value={selectedMemberId}
-                    onValueChange={setSelectedMemberId}
+                    onValueChange={(v) => {
+                      if (v) setSelectedMemberId(v);
+                    }}
                   >
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select a member" />
@@ -254,7 +253,7 @@ export function TeamMembers({
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 text-destructive hover:text-destructive"
+                        className="text-destructive hover:text-destructive h-8 w-8"
                         onClick={() => setMemberToRemove(member)}
                       >
                         <UserMinus className="h-4 w-4" />

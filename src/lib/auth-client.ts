@@ -6,8 +6,8 @@ import {
 } from 'better-auth/client/plugins';
 import { createAuthClient } from 'better-auth/react';
 
-import type { auth } from './auth';
 import { ac, allRoles } from './admin';
+import type { auth } from './auth';
 import { oc, allRoles as organizationRoles } from './organization';
 
 export const authClient = createAuthClient({

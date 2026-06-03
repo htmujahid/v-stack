@@ -57,22 +57,19 @@ export function NavMain({ items }: { items: Array<NavMainItem> }) {
           return (
             <Collapsible
               key={item.title}
-              asChild
               defaultOpen={item.isActive}
               className="group/collapsible"
             >
               <SidebarMenuItem>
-                <CollapsibleTrigger asChild>
-                  <Link href={item.url} aria-disabled={item.disabled}>
-                    <SidebarMenuButton
-                      tooltip={item.title}
-                      disabled={item.disabled}
-                    >
-                      {item.icon && <item.icon />}
-                      <span>{item.title}</span>
-                      <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-                    </SidebarMenuButton>
-                  </Link>
+                <CollapsibleTrigger>
+                  <SidebarMenuButton
+                    tooltip={item.title}
+                    disabled={item.disabled}
+                  >
+                    {item.icon && <item.icon />}
+                    <span>{item.title}</span>
+                    <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                  </SidebarMenuButton>
                 </CollapsibleTrigger>
                 <CollapsibleContent>
                   <SidebarMenuSub>
@@ -93,14 +90,14 @@ export function NavMain({ items }: { items: Array<NavMainItem> }) {
                         >
                           <SidebarMenuSubButton
                             aria-disabled={subItem.disabled}
-                            asChild
+                            render={
+                              <Link
+                                href={subItem.url}
+                                aria-disabled={subItem.disabled}
+                              />
+                            }
                           >
-                            <Link
-                              href={subItem.url}
-                              aria-disabled={subItem.disabled}
-                            >
-                              <span>{subItem.title}</span>
-                            </Link>
+                            <span>{subItem.title}</span>
                           </SidebarMenuSubButton>
                         </SidebarMenuSubItem>
                       );

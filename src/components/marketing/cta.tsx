@@ -15,18 +15,18 @@ export function CTA() {
             forever, no strings attached.
           </p>
           <div className="mt-8 flex flex-col gap-4 sm:flex-row">
-            <Button size="lg" asChild>
-              <Link href="/auth/sign-up">Try the Demo</Link>
-            </Button>
-            <Button variant="outline" size="lg" asChild>
-              <Link
-                href="https://github.com/htmujahid/next-bard"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
+            <Link href="/auth/sign-up">
+              <Button size="lg">Try the Demo</Button>
+            </Link>
+            <Link
+              href="https://github.com/htmujahid/next-bard"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Button variant="outline" size="lg">
                 View on GitHub
-              </Link>
-            </Button>
+              </Button>
+            </Link>
           </div>
         </div>
       </div>

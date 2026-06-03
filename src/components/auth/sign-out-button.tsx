@@ -12,7 +12,10 @@ interface SignOutButtonProps {
   redirectUrl?: string;
 }
 
-export function SignOutButton({ children, redirectUrl = '/' }: SignOutButtonProps) {
+export function SignOutButton({
+  children,
+  redirectUrl = '/',
+}: SignOutButtonProps) {
   const [pending, startTransition] = useTransition();
 
   const handleSignOut = () => {

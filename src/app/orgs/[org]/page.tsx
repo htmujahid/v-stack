@@ -1,7 +1,7 @@
-import Link from 'next/link';
-import { headers } from 'next/headers';
-
 import { cacheLife, cacheTag } from 'next/cache';
+import { headers } from 'next/headers';
+import Link from 'next/link';
+
 import { ArrowRight, Mail, Settings, Users } from 'lucide-react';
 
 import { Shell } from '@/components/layout/shell';
@@ -78,12 +78,12 @@ export default async function OrganizationPage({
             <CardDescription className="mb-4">
               Active team members
             </CardDescription>
-            <Button variant="outline" size="sm" asChild>
-              <Link href={pathsConfig.orgs.members(slug)}>
+            <Link href={pathsConfig.orgs.members(slug)}>
+              <Button variant="outline" size="sm">
                 Manage Members
                 <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
+              </Button>
+            </Link>
           </CardContent>
         </Card>
 
@@ -97,12 +97,12 @@ export default async function OrganizationPage({
             <CardDescription className="mb-4">
               Pending invitations
             </CardDescription>
-            <Button variant="outline" size="sm" asChild>
-              <Link href={pathsConfig.orgs.invitations(slug)}>
+            <Link href={pathsConfig.orgs.invitations(slug)}>
+              <Button variant="outline" size="sm">
                 Manage Invitations
                 <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
+              </Button>
+            </Link>
           </CardContent>
         </Card>
 
@@ -115,12 +115,12 @@ export default async function OrganizationPage({
             <CardDescription className="mb-4">
               Manage organization settings, name, and logo.
             </CardDescription>
-            <Button variant="outline" size="sm" asChild>
-              <Link href={pathsConfig.orgs.settings(slug)}>
+            <Link href={pathsConfig.orgs.settings(slug)}>
+              <Button variant="outline" size="sm">
                 Organization Settings
                 <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
+              </Button>
+            </Link>
           </CardContent>
         </Card>
       </div>
@@ -145,9 +145,9 @@ export default async function OrganizationPage({
                       {member.user.name?.charAt(0).toUpperCase() || 'U'}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium truncate">{member.user.name}</p>
-                    <p className="text-muted-foreground text-sm truncate">
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-medium">{member.user.name}</p>
+                    <p className="text-muted-foreground truncate text-sm">
                       {member.user.email}
                     </p>
                   </div>

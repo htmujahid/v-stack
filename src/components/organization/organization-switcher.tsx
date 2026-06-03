@@ -7,7 +7,7 @@ import { Building2, Check, ChevronsUpDown, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import {
   Command,
   CommandEmpty,
@@ -51,33 +51,33 @@ export function OrganizationSwitcher() {
 
   return (
     <Popover>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          role="combobox"
-          className="w-[200px] justify-between"
-          disabled={isLoading}
-        >
-          {isLoading ? (
-            <span className="text-muted-foreground">Loading...</span>
-          ) : activeOrg ? (
-            <div className="flex items-center gap-2 truncate">
-              <Avatar className="h-5 w-5">
-                {activeOrg.logo && <AvatarImage src={activeOrg.logo} />}
-                <AvatarFallback className="text-xs">
-                  {activeOrg.name.charAt(0).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <span className="truncate">{activeOrg.name}</span>
-            </div>
-          ) : (
-            <div className="flex items-center gap-2">
-              <Building2 className="h-4 w-4" />
-              <span>Select organization</span>
-            </div>
-          )}
-          <ChevronsUpDown className="ml-auto h-4 w-4 shrink-0 opacity-50" />
-        </Button>
+      <PopoverTrigger
+        role="combobox"
+        className={cn(
+          buttonVariants({ variant: 'outline' }),
+          'w-[200px] justify-between',
+        )}
+        disabled={isLoading}
+      >
+        {isLoading ? (
+          <span className="text-muted-foreground">Loading...</span>
+        ) : activeOrg ? (
+          <div className="flex items-center gap-2 truncate">
+            <Avatar className="h-5 w-5">
+              {activeOrg.logo && <AvatarImage src={activeOrg.logo} />}
+              <AvatarFallback className="text-xs">
+                {activeOrg.name.charAt(0).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <span className="truncate">{activeOrg.name}</span>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2">
+            <Building2 className="h-4 w-4" />
+            <span>Select organization</span>
+          </div>
+        )}
+        <ChevronsUpDown className="ml-auto h-4 w-4 shrink-0 opacity-50" />
       </PopoverTrigger>
       <PopoverContent className="w-[200px] p-0">
         <Command>

@@ -18,7 +18,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,6 +27,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import pathsConfig from '@/config/paths.config';
 import { authClient } from '@/lib/auth-client';
+import { cn } from '@/lib/utils';
 
 import type { Team } from './teams-table';
 
@@ -64,19 +65,22 @@ export function TeamActions({ team, orgSlug }: TeamActionsProps) {
   return (
     <>
       <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" className="h-8 w-8">
-            <MoreHorizontal className="h-4 w-4" />
-            <span className="sr-only">Open menu</span>
-          </Button>
+        <DropdownMenuTrigger
+          className={cn(
+            buttonVariants({ variant: 'ghost', size: 'icon' }),
+            'h-8 w-8',
+          )}
+        >
+          <MoreHorizontal className="h-4 w-4" />
+          <span className="sr-only">Open menu</span>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem asChild>
-            <Link href={pathsConfig.orgs.teamDetail(orgSlug, team.id)}>
+          <Link href={pathsConfig.orgs.teamDetail(orgSlug, team.id)}>
+            <DropdownMenuItem>
               <Users className="mr-2 h-4 w-4" />
               View Members
-            </Link>
-          </DropdownMenuItem>
+            </DropdownMenuItem>
+          </Link>
           <DropdownMenuItem
             onClick={() => setShowDeleteDialog(true)}
             className="text-destructive focus:text-destructive"

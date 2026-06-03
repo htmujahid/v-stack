@@ -18,15 +18,18 @@ description: Configure email verification, implement password reset flows, set p
 Configure `emailVerification.sendVerificationEmail` to verify user email addresses.
 
 ```ts
-import { betterAuth } from "better-auth";
-import { sendEmail } from "./email"; // your email sending function
+import { betterAuth } from 'better-auth';
+
+import { sendEmail } from './email';
+
+// your email sending function
 
 export const auth = betterAuth({
   emailVerification: {
     sendVerificationEmail: async ({ user, url, token }, request) => {
       await sendEmail({
         to: user.email,
-        subject: "Verify your email address",
+        subject: 'Verify your email address',
         text: `Click the link to verify your email: ${url}`,
       });
     },
@@ -60,7 +63,7 @@ Always use absolute URLs (including the origin) for callback URLs in sign-up and
 
 ```ts
 const { data, error } = await authClient.signUp.email({
-  callbackURL: "https://example.com/callback", // absolute URL with origin
+  callbackURL: 'https://example.com/callback', // absolute URL with origin
 });
 ```
 
@@ -69,8 +72,11 @@ const { data, error } = await authClient.signUp.email({
 Provide `sendResetPassword` in the email and password config to enable password resets.
 
 ```ts
-import { betterAuth } from "better-auth";
-import { sendEmail } from "./email"; // your email sending function
+import { betterAuth } from 'better-auth';
+
+import { sendEmail } from './email';
+
+// your email sending function
 
 export const auth = betterAuth({
   emailAndPassword: {
@@ -79,7 +85,7 @@ export const auth = betterAuth({
     sendResetPassword: async ({ user, url, token }, request) => {
       void sendEmail({
         to: user.email,
-        subject: "Reset your password",
+        subject: 'Reset your password',
         text: `Click the link to reset your password: ${url}`,
       });
     },
@@ -160,8 +166,8 @@ Call `requestPasswordReset` to send the reset link. Triggers the `sendResetPassw
 ```ts
 const data = await auth.api.requestPasswordReset({
   body: {
-    email: "john.doe@example.com", // required
-    redirectTo: "https://example.com/reset-password",
+    email: 'john.doe@example.com', // required
+    redirectTo: 'https://example.com/reset-password',
   },
 });
 ```
@@ -170,8 +176,8 @@ Or authClient:
 
 ```ts
 const { data, error } = await authClient.requestPasswordReset({
-  email: "john.doe@example.com", // required
-  redirectTo: "https://example.com/reset-password",
+  email: 'john.doe@example.com', // required
+  redirectTo: 'https://example.com/reset-password',
 });
 ```
 
@@ -186,8 +192,8 @@ Default: `scrypt` (Node.js native, no external dependencies).
 To use Argon2id or another algorithm, provide custom `hash` and `verify` functions:
 
 ```ts
-import { betterAuth } from "better-auth";
-import { hash, verify, type Options } from "@node-rs/argon2";
+import { type Options, hash, verify } from '@node-rs/argon2';
+import { betterAuth } from 'better-auth';
 
 const argon2Options: Options = {
   memoryCost: 65536, // 64 MiB

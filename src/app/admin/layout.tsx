@@ -1,8 +1,3 @@
-import { headers } from 'next/headers';
-import { redirect } from 'next/navigation';
-
-import { UserWithRole } from 'better-auth/plugins';
-
 import { AdminSidebar } from '@/components/layout/admin-sidebar';
 import { AppBreadcrumbs } from '@/components/layout/app-breadcrumb';
 import { NotificationDropdown } from '@/components/layout/notification-dropdown';
@@ -11,19 +6,14 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from '@/components/ui/sidebar';
-import pathsConfig from '@/config/paths.config';
-import { getSession } from '@/orpc/actions/auth/get-session';
+import { requireAdmin } from '@/orpc/proxy';
 
 export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getSession(await headers());
-
-  if (!session?.user?.role?.split(',').includes('admin')) {
-    redirect(pathsConfig.auth.signIn);
-  }
+  await requireAdmin();
 
   return (
     <SidebarProvider
@@ -34,7 +24,7 @@ export default async function AdminLayout({
         } as React.CSSProperties
       }
     >
-      <AdminSidebar user={session?.user as UserWithRole} />
+      <AdminSidebar />
       <SidebarInset>
         <header className="flex h-(--header-height) shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height)">
           <div className="flex w-full items-center gap-1 px-4">

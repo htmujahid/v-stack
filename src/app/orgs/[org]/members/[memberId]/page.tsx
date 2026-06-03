@@ -1,8 +1,8 @@
+import { cacheLife, cacheTag } from 'next/cache';
 import { headers } from 'next/headers';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
-import { cacheLife, cacheTag } from 'next/cache';
 import { ChevronLeft } from 'lucide-react';
 
 import { Shell } from '@/components/layout/shell';
@@ -107,11 +107,11 @@ export default async function MemberDetailPage({
     <Shell>
       <div className="flex flex-col gap-6">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" asChild>
-            <Link href={pathsConfig.orgs.members(slug)}>
+          <Link href={pathsConfig.orgs.members(slug)}>
+            <Button variant="ghost" size="icon">
               <ChevronLeft className="h-4 w-4" />
-            </Link>
-          </Button>
+            </Button>
+          </Link>
           <div>
             <h1 className="text-2xl font-bold">Member Details</h1>
             <p className="text-muted-foreground text-sm">
@@ -176,10 +176,10 @@ export default async function MemberDetailPage({
                   </Badge>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground text-sm">
-                    Joined
+                  <span className="text-muted-foreground text-sm">Joined</span>
+                  <span className="text-sm">
+                    {formatDate(member.createdAt)}
                   </span>
-                  <span className="text-sm">{formatDate(member.createdAt)}</span>
                 </div>
               </div>
             </CardContent>

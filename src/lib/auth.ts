@@ -7,8 +7,8 @@ import authConfig from '@/config/auth.config';
 import pathsConfig from '@/config/paths.config';
 import { db } from '@/db';
 import * as schema from '@/db/schema';
-import { sendMail } from '@/lib/mailer';
 import { ac, allRoles } from '@/lib/admin';
+import { sendMail } from '@/lib/mailer';
 import { oc, allRoles as organizationRoles } from '@/lib/organization';
 
 export const auth = betterAuth({

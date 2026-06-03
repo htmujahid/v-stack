@@ -1,7 +1,8 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { useTransition } from 'react';
+
+import { useRouter } from 'next/navigation';
 
 import { Loader2, LogOut, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -17,7 +18,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -27,6 +28,7 @@ import {
 } from '@/components/ui/card';
 import pathsConfig from '@/config/paths.config';
 import { authClient } from '@/lib/auth-client';
+import { cn } from '@/lib/utils';
 
 interface MemberActionsProps {
   memberId: string;
@@ -110,15 +112,16 @@ export function MemberActions({
               </p>
             </div>
             <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="destructive" disabled={leavePending}>
-                  {leavePending ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    <LogOut className="mr-2 h-4 w-4" />
-                  )}
-                  Leave
-                </Button>
+              <AlertDialogTrigger
+                className={cn(buttonVariants({ variant: 'destructive' }))}
+                disabled={leavePending}
+              >
+                {leavePending ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <LogOut className="mr-2 h-4 w-4" />
+                )}
+                Leave
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
@@ -152,15 +155,16 @@ export function MemberActions({
               </p>
             </div>
             <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="destructive" disabled={removePending}>
-                  {removePending ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    <Trash2 className="mr-2 h-4 w-4" />
-                  )}
-                  Remove
-                </Button>
+              <AlertDialogTrigger
+                className={cn(buttonVariants({ variant: 'destructive' }))}
+                disabled={removePending}
+              >
+                {removePending ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Trash2 className="mr-2 h-4 w-4" />
+                )}
+                Remove
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>

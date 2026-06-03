@@ -47,7 +47,7 @@ export function OrgSwitcher({ organization, organizations }: OrgSwitcherProps) {
     <SidebarMenu>
       <SidebarMenuItem>
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
+          <DropdownMenuTrigger>
             <SidebarMenuButton
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
@@ -64,7 +64,9 @@ export function OrgSwitcher({ organization, organizations }: OrgSwitcherProps) {
                 )}
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">{organization.name}</span>
+                <span className="truncate font-medium">
+                  {organization.name}
+                </span>
                 <span className="truncate text-xs">Organization</span>
               </div>
               <ChevronsUpDown className="ml-auto" />
@@ -103,16 +105,16 @@ export function OrgSwitcher({ organization, organizations }: OrgSwitcherProps) {
               </DropdownMenuItem>
             ))}
             <DropdownMenuSeparator />
-            <DropdownMenuItem asChild className="gap-2 p-2">
-              <Link href={pathsConfig.orgs.create}>
+            <Link href={pathsConfig.orgs.create}>
+              <DropdownMenuItem className="gap-2 p-2">
                 <div className="flex size-6 items-center justify-center rounded-md border bg-transparent">
                   <Plus className="size-4" />
                 </div>
                 <span className="text-muted-foreground font-medium">
                   Create organization
                 </span>
-              </Link>
-            </DropdownMenuItem>
+              </DropdownMenuItem>
+            </Link>
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>

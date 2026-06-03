@@ -1,7 +1,8 @@
 'use client';
 
+import { useState, useTransition } from 'react';
+
 import { useRouter } from 'next/navigation';
-import { useTransition } from 'react';
 
 import { Loader2, MoreHorizontal, RefreshCw, X } from 'lucide-react';
 import { toast } from 'sonner';
@@ -15,9 +16,8 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,6 +27,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { authClient } from '@/lib/auth-client';
+import { cn } from '@/lib/utils';
 
 import type { Invitation } from './invitations-table';
 
@@ -41,6 +42,7 @@ export function InvitationsTableActions({
 }: InvitationsTableActionsProps) {
   const router = useRouter();
   const [resendPending, startResendTransition] = useTransition();
+  const [open, setOpen] = useState(false);
 
   const handleCancelInvitation = async () => {
     await authClient.organization.cancelInvitation(
@@ -84,16 +86,17 @@ export function InvitationsTableActions({
   }
 
   return (
-    <AlertDialog>
+    <AlertDialog open={open} onOpenChange={setOpen}>
       <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" disabled={resendPending}>
-            {resendPending ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <MoreHorizontal className="h-4 w-4" />
-            )}
-          </Button>
+        <DropdownMenuTrigger
+          className={cn(buttonVariants({ variant: 'ghost', size: 'icon' }))}
+          disabled={resendPending}
+        >
+          {resendPending ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <MoreHorizontal className="h-4 w-4" />
+          )}
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
@@ -102,15 +105,14 @@ export function InvitationsTableActions({
             <RefreshCw className="mr-2 h-4 w-4" />
             Resend Invitation
           </DropdownMenuItem>
-          <AlertDialogTrigger asChild>
-            <DropdownMenuItem
-              onSelect={(e) => e.preventDefault()}
-              className="text-destructive"
-            >
-              <X className="mr-2 h-4 w-4" />
-              Cancel Invitation
-            </DropdownMenuItem>
-          </AlertDialogTrigger>
+          <DropdownMenuItem
+            onSelect={(e) => e.preventDefault()}
+            className="text-destructive"
+            onClick={() => setOpen(true)}
+          >
+            <X className="mr-2 h-4 w-4" />
+            Cancel Invitation
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
       <AlertDialogContent>

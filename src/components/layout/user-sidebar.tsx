@@ -4,7 +4,6 @@ import * as React from 'react';
 
 import Link from 'next/link';
 
-import { UserWithRole } from 'better-auth/plugins';
 import {
   AppWindowIcon,
   BarChart3,
@@ -140,24 +139,21 @@ const data = {
 };
 
 export function UserSidebar({
-  user,
   ...props
-}: React.ComponentProps<typeof Sidebar> & { user: UserWithRole }) {
+}: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible="icon" variant="inset" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild>
-              <Link href="/home">
-                <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-                  <Sparkles className="size-4" />
-                </div>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">Acme Inc</span>
-                  <span className="truncate text-xs">Workspace</span>
-                </div>
-              </Link>
+            <SidebarMenuButton size="lg" render={<Link href="/home" />}>
+              <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
+                <Sparkles className="size-4" />
+              </div>
+              <div className="grid flex-1 text-left text-sm leading-tight">
+                <span className="truncate font-medium">Acme Inc</span>
+                <span className="truncate text-xs">Workspace</span>
+              </div>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
@@ -196,7 +192,7 @@ export function UserSidebar({
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={user} />
+        <NavUser />
       </SidebarFooter>
     </Sidebar>
   );

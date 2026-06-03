@@ -1,10 +1,9 @@
 import { headers } from 'next/headers';
 import Link from 'next/link';
 
+import { UserDropdown } from '@/components/layout/user-dropdown';
 import { Button } from '@/components/ui/button';
 import { auth } from '@/lib/auth';
-
-import { UserDropdown } from '@/components/layout/user-dropdown';
 
 export async function Header() {
   const data = await auth.api.getSession({
@@ -57,7 +56,7 @@ export async function Header() {
       </div>
       <div className="flex flex-1 items-center justify-end gap-2">
         {user ? (
-          <UserDropdown user={user} session={session} />
+          <UserDropdown />
         ) : (
           <>
             <Link href="/auth/sign-in">

@@ -1,6 +1,7 @@
 'use client';
 
 import { If } from '@/components/misc/if';
+import { useAuth } from '@/components/providers/auth-provider';
 import {
   Card,
   CardContent,
@@ -8,16 +9,13 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import type { authClient } from '@/lib/auth-client';
 
 import { TwoFactorEnableDisable } from './two-factor-enable-disable';
 import { TwoFactorScanQrCode } from './two-factor-scan-qr-code';
 
-export function TwoFactorContainer({
-  session,
-}: {
-  session: typeof authClient.$Infer.Session;
-}) {
+export function TwoFactorContainer() {
+  const auth = useAuth();
+
   return (
     <Card>
       <CardHeader>
@@ -28,10 +26,10 @@ export function TwoFactorContainer({
         </CardDescription>
       </CardHeader>
       <CardContent className="flex gap-2">
-        <If condition={!!session.user.twoFactorEnabled}>
+        <If condition={!!auth?.user.twoFactorEnabled}>
           <TwoFactorScanQrCode />
         </If>
-        <TwoFactorEnableDisable session={session} />
+        <TwoFactorEnableDisable />
       </CardContent>
     </Card>
   );
