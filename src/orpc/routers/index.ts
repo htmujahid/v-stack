@@ -4,6 +4,8 @@ import { User } from 'better-auth';
 import { o } from '@/orpc/context';
 import { authMiddleware } from '@/orpc/middlewares';
 
+import { tasksRouter } from './tasks';
+
 export const appRouter = {
   healthCheck: o
     .route({
@@ -31,6 +33,7 @@ export const appRouter = {
         user: context?.user as User,
       };
     }),
+  tasks: tasksRouter,
 };
 
 export type AppRouter = typeof appRouter;
