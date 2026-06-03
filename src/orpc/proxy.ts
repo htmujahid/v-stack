@@ -19,7 +19,6 @@ export const serverClient = createRouterClient(appRouter, {
 });
 
 const getSession = cache(async () => {
-  console.log('called');
   return auth.api.getSession({
     headers: await headers(),
   });
