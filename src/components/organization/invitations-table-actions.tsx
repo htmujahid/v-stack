@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { Loader2, MoreHorizontal, RefreshCw, X } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { useOrganization } from '@/components/providers/organization-provider';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,7 +27,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useOrganization } from '@/components/providers/organization-provider';
 import { authClient } from '@/lib/auth-client';
 import { cn } from '@/lib/utils';
 

@@ -41,10 +41,7 @@ interface OrgMember {
   };
 }
 
-async function getTeamDetails(
-  organizationId: string,
-  teamId: string,
-) {
+async function getTeamDetails(organizationId: string, teamId: string) {
   const reqHeaders = await headers();
   const [teamsRes, membersRes, activeMemberRes] = await Promise.all([
     auth.api.listOrganizationTeams({

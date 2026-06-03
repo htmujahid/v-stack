@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import { MoreHorizontal, Trash2, Users } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { useOrganization } from '@/components/providers/organization-provider';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,7 +27,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import pathsConfig from '@/config/paths.config';
-import { useOrganization } from '@/components/providers/organization-provider';
 import { authClient } from '@/lib/auth-client';
 import { cn } from '@/lib/utils';
 

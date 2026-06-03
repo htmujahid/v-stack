@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import { Building2, TriangleAlert, X } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { useOrganization } from '@/components/providers/organization-provider';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import {
@@ -17,7 +18,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { useOrganization } from '@/components/providers/organization-provider';
 import type { FileWithPreview } from '@/hooks/use-file-upload';
 import { formatBytes, useFileUpload } from '@/hooks/use-file-upload';
 import { cn } from '@/lib/utils';

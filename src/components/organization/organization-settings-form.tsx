@@ -7,6 +7,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
+import { useOrganization } from '@/components/providers/organization-provider';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -22,7 +23,6 @@ import {
   FieldLabel,
 } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
-import { useOrganization } from '@/components/providers/organization-provider';
 import { authClient } from '@/lib/auth-client';
 
 const updateOrganizationSchema = z.object({

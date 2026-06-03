@@ -10,8 +10,8 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from '@/components/ui/sidebar';
-import { auth } from '@/lib/auth';
 import { getOrganization, getOrganizations } from '@/data/organization';
+import { auth } from '@/lib/auth';
 import { requireAuth } from '@/orpc/proxy';
 
 interface OrgLayoutProps {

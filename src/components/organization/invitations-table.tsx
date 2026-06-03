@@ -6,6 +6,7 @@ import Link from 'next/link';
 
 import { Plus } from 'lucide-react';
 
+import { useOrganization } from '@/components/providers/organization-provider';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -17,7 +18,6 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import pathsConfig from '@/config/paths.config';
-import { useOrganization } from '@/components/providers/organization-provider';
 import { formatDate } from '@/lib/format';
 
 import { InvitationsTableActions } from './invitations-table-actions';

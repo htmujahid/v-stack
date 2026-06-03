@@ -26,10 +26,7 @@ interface MemberDetailPageProps {
   params: Promise<{ org: string; memberId: string }>;
 }
 
-async function getMemberDetails(
-  organizationId: string,
-  memberId: string,
-) {
+async function getMemberDetails(organizationId: string, memberId: string) {
   const reqHeaders = await headers();
   const [membersRes, activeMemberRes] = await Promise.all([
     auth.api.listMembers({

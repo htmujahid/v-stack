@@ -10,6 +10,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
+import { useOrganization } from '@/components/providers/organization-provider';
 import { Button } from '@/components/ui/button';
 import {
   Field,
@@ -25,7 +26,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import pathsConfig from '@/config/paths.config';
-import { useOrganization } from '@/components/providers/organization-provider';
 import { authClient } from '@/lib/auth-client';
 
 const updateMemberSchema = z.object({

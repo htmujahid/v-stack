@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { useOrganization } from '@/components/providers/organization-provider';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,7 +26,6 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import pathsConfig from '@/config/paths.config';
-import { useOrganization } from '@/components/providers/organization-provider';
 import { authClient } from '@/lib/auth-client';
 import { cn } from '@/lib/utils';
 
