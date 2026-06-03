@@ -39,10 +39,7 @@ A production-ready, full-stack Next.js 16 boilerplate with authentication, admin
 
 ### Advanced Data Tables
 
-- **Multiple Filter Modes**:
-  - Advanced filters (Airtable-like)
-  - Command filters (Linear-like)
-  - Standard filters
+- Standard Filters
 - Multi-column sorting
 - Server-side pagination
 - Column visibility toggle
