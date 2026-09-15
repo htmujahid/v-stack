@@ -1,33 +1,27 @@
-import nextVitals from 'eslint-config-next/core-web-vitals';
-import typescript from 'eslint-config-next/typescript';
-import { defineConfig, globalIgnores } from 'eslint/config';
+import { defineConfig, globalIgnores } from "eslint/config";
+import nextVitals from "eslint-config-next/core-web-vitals";
+import nextTs from "eslint-config-next/typescript";
 
 const eslintConfig = defineConfig([
   ...nextVitals,
-  ...typescript,
-  globalIgnores([
-    'node_modules/**',
-    '.next/**',
-    'out/**',
-    'build/**',
-    'next-env.d.ts',
-  ]),
+  ...nextTs,
   {
-    rules: {
-      'react-hooks/refs': 'off',
-      'react-hooks/static-components': 'off',
-      'react-hooks/set-state-in-effect': 'off',
-      'react-hooks/incompatible-library': 'off',
-      'react-hooks/purity': 'off',
-      '@next/next/no-html-link-for-pages': 'off',
-      '@next/next/no-img-element': 'off',
-      '@typescript-eslint/no-unused-vars': [
-        'error',
-        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
-      ],
-      '@typescript-eslint/no-explicit-any': 'off',
+    // eslint-plugin-react's automatic version detection crashes on ESLint 10
+    // (it calls the removed context.getFilename API), so pin it explicitly.
+    settings: {
+      react: {
+        version: "19.2.8",
+      },
     },
   },
+  // Override default ignores of eslint-config-next.
+  globalIgnores([
+    // Default ignores of eslint-config-next:
+    ".next/**",
+    "out/**",
+    "build/**",
+    "next-env.d.ts",
+  ]),
 ]);
 
 export default eslintConfig;
