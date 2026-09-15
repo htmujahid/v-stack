@@ -21,12 +21,16 @@ export interface CommonMessages {
     signOut: string
     profile: string
     dashboard: string
+    docs: string
+    blog: string
   }
   footer: {
     copyright: string
     status: string
     terms: string
     privacy: string
+    docs: string
+    blog: string
   }
   notFound: {
     title: string
@@ -462,6 +466,22 @@ export interface MarketingMessages {
       | "changes",
       LegalSectionMessages
     >
+  }
+  blog: {
+    metadata: MetadataMessages
+    badge: string
+    title: string
+    description: string
+    backToBlog: string
+  }
+  docs: {
+    metadata: MetadataMessages
+    badge: string
+    title: string
+    description: string
+    navigation: string
+    previous: string
+    next: string
   }
 }
 

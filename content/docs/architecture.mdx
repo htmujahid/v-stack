@@ -1,0 +1,135 @@
+export const metadata = {
+  title: "Architecture",
+  description:
+    "The directory layout, route group strategy, and the layered feature architecture that keeps server actions, API routes, and caching consistent.",
+  order: 3,
+}
+
+# Architecture
+
+v-stack is a **modular monolith**. One deployable, one database, but with
+internal boundaries strict enough that any feature could be lifted out —
+or deleted — without archaeology.
+
+## Top-level layout
+
+```text
+app/          Next.js App Router — routes, layouts, API handlers
+features/     Feature modules: schema, validation, actions, services
+components/   Shared React components (components/ui is shadcn-managed)
+lib/          Cross-cutting utilities: auth, permissions, email, storage
+db/           Drizzle instance, generated schemas, migrations
+content/      MDX content for the docs and blog
+i18n/         next-intl routing definition
+messages/     Typed translation catalogs (en, ar)
+hooks/        Shared React hooks
+proxy.ts      Request proxy (locale negotiation middleware)
+```
+
+The rule that keeps this honest: **`app/` is thin**. Pages parse input,
+check sessions, and compose components. Business logic lives in
+`features/`; infrastructure lives in `lib/`. If a `page.tsx` contains a
+database query, it is in the wrong file.
+
+## Route groups
+
+Everything user-facing lives under `app/[locale]/` (see
+[Internationalization](/docs/internationalization)). Below that, route
+groups — the parenthesized folders that do not affect URLs — partition
+the app by *access model and chrome*:
+
+| Group | Access | Chrome | Contents |
+| --- | --- | --- | --- |
+| `(marketing)` | Public | Site header/footer | Home, terms, privacy, status, docs, blog |
+| `(auth)` | Public | Centered panel | Sign-in, sign-up, password reset, 2FA |
+| `(protected)` | Session required | — (guard only) | Everything below it |
+| `(protected)/(sidebar)` | Session | App sidebar | Dashboard, tasks, projects, labels, API keys |
+| `(protected)/(header)` | Session | App header | Home, profile, organizations, invitations |
+| `(admin)` | Admin role | Admin shell | User, role, and announcement management |
+| `[org]` | Org membership | Org sidebar | Workspace: members, teams, roles, settings |
+
+Two conventions matter here:
+
+- **Guards live in layouts.** `(protected)/layout.tsx` fetches the
+  session once and redirects to `/sign-in` if absent. Every page beneath
+  it can assume a session exists. The admin and org layouts add their own
+  checks on top. No page re-implements auth.
+- **Route-private code uses underscore folders.** `_components/` and
+  `_lib/` hold code used only by the routes beside them. If a second
+  route group needs it, it moves to `components/` or `lib/` — never
+  import across `_` folders.
+
+## The feature module
+
+Every domain feature is a folder in `features/` with the same anatomy.
+The `desk` feature (projects, tasks, labels) is the reference example:
+
+```text
+features/desk/
+├── schema.ts          Drizzle tables + row types
+├── validation.ts      Zod schemas + shared enum tuples
+├── repository.ts      Raw database queries (Drizzle only)
+├── service.ts         Business logic, caching, domain errors
+├── actions.ts         Server actions (next-safe-action)
+├── queries.ts         SWR query descriptors for client components
+└── search-params.ts   nuqs parsers for URL state (when needed)
+```
+
+The layers stack with a strict "only call downward" rule:
+
+```text
+page / component
+      │
+      ▼
+actions.ts        who may do this?     (auth + input validation)
+      │
+      ▼
+service.ts        what does it mean?   (business rules, caching)
+      │
+      ▼
+repository.ts     how is it stored?    (Drizzle queries, no auth)
+```
+
+Why bother with the ceremony? Because entry points multiply. The
+`/api/public/v1/tasks` route handler (API-key auth) and the
+`createTask` server action (session auth) both call the **same service
+function**. Authorization differs per entry point; the business rule
+exists once. Without the service layer, the public API becomes a
+slowly-diverging copy of the actions.
+
+## Caching strategy
+
+The app uses Next.js's `"use cache"` directive (enabled via
+`experimental.useCache`) at the **service layer**, tagged with keys from
+a `cache-keys.ts` module:
+
+```ts
+// features/announcements/service.ts
+export async function listActiveAnnouncements() {
+  "use cache"
+  cacheTag(ANNOUNCEMENTS_KEY)
+  return getActiveAnnouncements()
+}
+```
+
+Mutating actions call `updateTag(ANNOUNCEMENTS_KEY)` after writing. The
+same key doubles as the SWR cache key on the client (see
+[Patterns](/docs/patterns)), so one constant names the data everywhere it
+is cached.
+
+## The API surface
+
+`app/api/` hosts three distinct API styles, deliberately separated:
+
+- **`/api/auth/[...all]`** — better-auth's own handler; never touched
+  directly.
+- **`/api/v1/*`** — first-party endpoints for the app's own client-side
+  code, authenticated by session cookie.
+- **`/api/public/v1/*`** — the third-party API, authenticated with API
+  keys via `requireApiKey()` and documented by the OpenAPI schema served
+  at `/api/openapi.json` with a reference UI at `/api/reference`.
+
+Route handlers translate domain errors to HTTP with
+`apiErrorResponse()` from `lib/http.ts` — a `ForbiddenError` thrown in a
+service becomes a 403 in the API and a readable message in a server
+action, from a single `throw`.

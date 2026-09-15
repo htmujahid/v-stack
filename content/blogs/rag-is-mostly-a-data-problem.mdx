@@ -1,0 +1,89 @@
+export const metadata = {
+  title: "RAG Is Mostly a Data Problem",
+  description:
+    "When retrieval-augmented generation disappoints, the model is rarely the culprit. Chunking, freshness, and retrieval quality are where RAG systems are won or lost.",
+  date: "2026-08-15",
+  author: "Talha Mujahid",
+  tags: ["ai", "rag", "search"],
+}
+
+Every RAG postmortem I have read or written ends the same way. The team
+swapped models twice, tuned prompts for a month, and the real problem was
+that the retriever was feeding the model the wrong three paragraphs.
+
+A language model cannot cite what it never saw. If the answer is not in
+the context window, no amount of prompt engineering will conjure it.
+Which means a RAG system is a **search engine with a very articulate
+front-end** — and it fails the way search engines fail.
+
+## Chunking is a modeling decision, not a preprocessing step
+
+The default — split every document into 500-token windows with overlap —
+destroys exactly the structure that makes documents answerable. A table
+loses its header. A step loses its "step 3 of 7" context. An API
+parameter loses the endpoint it belongs to.
+
+Chunk along the document's own seams instead:
+
+- Markdown: split on headings, keep the heading *path* in the chunk
+  ("Database → Migrations → Rollback").
+- Code: split on functions and classes, keep the file path and imports.
+- Tickets and threads: one chunk per message, prefixed with author and
+  date.
+
+The test is simple: read a chunk in isolation. If *you* cannot tell what
+it is about, the embedding model cannot either.
+
+## Hybrid retrieval is the floor, not the ceiling
+
+Embeddings are magnificent at "conceptually related" and mediocre at
+"contains this exact identifier". Users query with exact identifiers
+constantly — error codes, function names, invoice numbers. Pure vector
+search whiffs on `ERR_PNPM_MINIMUM_RELEASE_AGE_VIOLATION` while
+confidently returning a paragraph about package management vibes.
+
+The standard remedy stack, in order of effort:
+
+1. **BM25 + vectors** with reciprocal rank fusion. An afternoon of work,
+   often the single biggest quality jump.
+2. **Metadata filters** — product area, doc version, recency — applied
+   *before* similarity search, so the top-k comes from the right corpus.
+3. **A reranker** over the top 50 candidates. Slower, smarter, worth it
+   for anything user-facing.
+
+## Freshness is a product feature
+
+A RAG system answering from last quarter's pricing page is worse than no
+answer — it is a confident wrong answer with a citation. Stale indexes
+are the silent killer because nothing *errors*; quality just decays.
+
+Treat the pipeline like any other data pipeline: incremental re-indexing
+on document change events (not nightly full rebuilds), a `last_indexed`
+timestamp surfaced in monitoring, and deletion propagation — when a doc
+is removed or access-restricted, its chunks must leave the index too.
+That last one is a security requirement wearing a data-engineering
+costume.
+
+## Measure retrieval before you measure generation
+
+Split your evaluation in two, because the failure modes are different:
+
+```text
+Question → [Retrieval] → chunks → [Generation] → answer
+             ↑ measure recall@k here    ↑ measure faithfulness here
+```
+
+Build a golden set of fifty real questions with the doc that answers
+each. Retrieval recall@10 tells you whether the right material even
+reached the model. If recall is 60%, stop tuning prompts — your ceiling
+is 60% and the work is in the index.
+
+## The uncomfortable summary
+
+The glamorous parts of RAG — the model, the prompt, the agentic
+re-query loops — sit on top of a mundane foundation: clean chunks, hybrid
+search, fresh indexes, measured recall. Teams that treat RAG as an AI
+problem plateau early. Teams that treat it as a data problem with an AI
+garnish ship systems that actually answer questions.
+
+The model is the last mile. The data is the road.

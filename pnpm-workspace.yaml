@@ -1,6 +1,15 @@
 packages: []
 
+# better-auth 1.7.5 is already in the committed lockfile but younger than
+# pnpm's default 24h minimumReleaseAge; exclude it so installs pass.
+minimumReleaseAgeExclude:
+  - better-auth
+  - "@better-auth/*"
+
 allowBuilds:
   sharp: true
   unrs-resolver: true
   msw: false
+  "@parcel/watcher": false
+  "@swc/core": false
+  esbuild: false

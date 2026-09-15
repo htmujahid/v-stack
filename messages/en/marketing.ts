@@ -156,4 +156,30 @@ export default {
       },
     },
   },
+  blog: {
+    metadata: {
+      title: "Blog - v-stack",
+      description:
+        "Writing on programming, AI, and building products on a solid foundation.",
+    },
+    badge: "Blog",
+    title: "Notes from the workbench",
+    description:
+      "Writing on programming, AI, and building products on a solid foundation.",
+    backToBlog: "← Back to blog",
+  },
+  docs: {
+    metadata: {
+      title: "Docs - v-stack",
+      description:
+        "How v-stack is built: architecture, patterns, and the conventions behind the codebase.",
+    },
+    badge: "Docs",
+    title: "Documentation",
+    description:
+      "How v-stack is built: architecture, patterns, and the conventions behind the codebase.",
+    navigation: "Documentation",
+    previous: "Previous",
+    next: "Next",
+  },
 } as const

@@ -1,0 +1,78 @@
+export const metadata = {
+  title: "Introduction",
+  description:
+    "What v-stack is, the problems it solves, and a tour of the technology choices behind it.",
+  order: 1,
+}
+
+# Introduction
+
+v-stack is a production-grade SaaS starter built on **Next.js 16** and
+**React 19**. It ships the infrastructure every serious product needs —
+authentication, multi-tenant organizations, role-based access control,
+internationalization, a typed data layer, and a public API — so that new
+projects start at the interesting part.
+
+It is opinionated on purpose. Every layer has one blessed way of doing
+things, documented in these pages. The conventions are the product; the
+demo features (a small task-management app) exist to prove the
+conventions work end to end.
+
+## What is included
+
+- **Authentication** — email/password, magic links, email OTP, social
+  sign-in, two-factor auth with backup codes, and session management,
+  built on [better-auth](https://better-auth.com).
+- **Multi-tenancy** — organizations with members, teams, invitations,
+  custom per-organization roles, and an organization-scoped workspace
+  under the `[org]` route segment.
+- **Authorization** — three distinct permission systems: app-level roles
+  (admin area), organization-level roles (workspaces), and scoped API
+  keys (public API).
+- **Internationalization** — English and Arabic (RTL) via
+  [next-intl](https://next-intl.dev), with fully typed message catalogs.
+- **Data layer** — PostgreSQL through [Drizzle ORM](https://orm.drizzle.team),
+  with generated migrations and a repository/service/action layering.
+- **Public API** — versioned REST endpoints authenticated by API keys,
+  documented with an OpenAPI schema and a Scalar reference UI at
+  `/api/reference`.
+- **Infrastructure** — Redis for session storage, S3-compatible object
+  storage for uploads, SMTP email, all runnable locally with one
+  `docker-compose up`.
+- **Content** — this documentation and the blog are MDX files compiled
+  by `@next/mdx`, living in `content/docs` and `content/blogs`.
+
+## The stack at a glance
+
+| Layer | Choice | Where it is configured |
+| --- | --- | --- |
+| Framework | Next.js 16 (App Router) | `next.config.ts` |
+| UI | React 19, shadcn/ui, Base UI, Tailwind CSS 4 | `components/`, `app/globals.css` |
+| Auth | better-auth + plugins | `lib/auth.ts` |
+| Database | PostgreSQL + Drizzle ORM | `db/`, `drizzle.config.ts` |
+| Mutations | next-safe-action | `lib/safe-action.ts`, `features/*/actions.ts` |
+| Client data | SWR | `features/*/queries.ts` |
+| URL state | nuqs | `features/*/search-params.ts` |
+| Validation | Zod 4 | `features/*/validation.ts` |
+| i18n | next-intl | `i18n/`, `messages/`, `proxy.ts` |
+| Email | nodemailer (Mailpit in dev) | `lib/email.ts` |
+| Storage | AWS SDK S3 (MinIO in dev) | `lib/storage.ts` |
+| Cache | Redis via ioredis | `lib/redis.ts` |
+
+## How to read these docs
+
+The pages are ordered as a path:
+
+1. [Getting Started](/docs/getting-started) — run the project locally.
+2. [Architecture](/docs/architecture) — how the codebase is laid out and
+   why.
+3. [Authentication](/docs/authentication) and
+   [Database](/docs/database) — the two subsystems everything else leans
+   on.
+4. [Internationalization](/docs/internationalization) — routing, typed
+   messages, and RTL.
+5. [Conventions](/docs/conventions) and [Patterns](/docs/patterns) — the
+   rules and recipes to follow when adding your own features.
+
+If you only read two pages, read the last two. They describe the shape
+every new piece of code in this repository is expected to take.

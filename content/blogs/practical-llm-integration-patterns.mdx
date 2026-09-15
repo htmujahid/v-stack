@@ -1,0 +1,115 @@
+export const metadata = {
+  title: "Practical Patterns for Putting LLMs in Production",
+  description:
+    "Beyond the demo: structured outputs, graceful degradation, prompt versioning, and the other patterns that separate an LLM feature from an LLM liability.",
+  date: "2026-07-24",
+  author: "Talha Mujahid",
+  tags: ["ai", "llm", "architecture"],
+}
+
+The demo takes an afternoon. The production feature takes a quarter. The
+gap between the two is not model quality — it is that a demo only has to
+work once, and a product feature has to work on the ten-thousandth weird
+input at 3 a.m. while the API is having a bad day.
+
+These are the patterns that consistently close that gap.
+
+## 1. Structured outputs or nothing
+
+Free-text responses are for chatbots. For everything else — tagging,
+extraction, classification, drafting into a form — constrain the model to
+a schema and validate the result like any other untrusted input:
+
+```ts
+const suggestionSchema = z.object({
+  title: z.string().max(200),
+  priority: z.enum(["low", "medium", "high", "urgent"]),
+  labels: z.array(z.string()).max(5),
+  confidence: z.number().min(0).max(1),
+})
+
+const parsed = suggestionSchema.safeParse(modelOutput)
+
+if (!parsed.success) {
+  // One retry with the validation errors in the prompt, then fall back.
+  return retryOrFallback(parsed.error)
+}
+```
+
+Treat the model as a function with a typed return value that occasionally
+lies. The schema is your contract; `safeParse` is your enforcement.
+
+## 2. Design the feature to survive the model being down
+
+An LLM API is a slow, rate-limited, occasionally unavailable dependency.
+The feature has to have an answer for that *in the product design*, not
+just in the error handler:
+
+- **Suggest, don't gate.** If the model drafts a task description, an
+  empty textarea is the fallback. If the model *must* respond before the
+  user can proceed, you have built an outage amplifier.
+- **Queue the non-urgent.** Summaries, embeddings, enrichment — push them
+  to a background job with retries. Nobody needs an embedding
+  synchronously.
+- **Cache aggressively.** Same input, same prompt version, same model?
+  Same output. Hash the three together and check Redis first.
+
+## 3. Version your prompts like code, because they are code
+
+The prompt is business logic in a string. It needs the same treatment as
+any other logic:
+
+```ts
+export const TASK_TRIAGE_PROMPT = {
+  id: "task-triage",
+  version: 4,
+  model: "claude-sonnet-4-6",
+  build: (input: TriageInput) => `...`,
+}
+```
+
+Log the prompt id, version, and model with every call. When output
+quality shifts, you want to answer "what changed?" from logs, not from
+archaeology. And when you upgrade models, run the old and new versions
+side by side on logged inputs before flipping traffic.
+
+## 4. Keep a human in the loop where it counts
+
+The cheapest reliability upgrade is a review step. Patterns in ascending
+order of trust:
+
+1. **Draft mode** — model output lands in an editable field; the user
+   saves it. (Start here. Most features never need to leave.)
+2. **Approve mode** — model acts, but the result sits in a pending state
+   until confirmed.
+3. **Autopilot with audit** — model acts directly; every action is logged
+   and reversible.
+
+Moving down the list is a product decision backed by measured accuracy,
+not a launch-day default.
+
+## 5. Evals before scale
+
+You do not need a research-grade eval harness. You need thirty real
+inputs with known-good outputs, in a file, run on every prompt change:
+
+```ts
+for (const example of goldenSet) {
+  const output = await runPrompt(TASK_TRIAGE_PROMPT, example.input)
+  scores.push(judge(output, example.expected))
+}
+```
+
+A spreadsheet-grade eval catches the regression where version 5 of your
+prompt got better at edge cases and worse at the happy path — which is
+exactly the regression you will otherwise ship.
+
+## The theme
+
+Every pattern above is the same move: **take the magic box and wrap it in
+ordinary engineering**. Schemas, queues, caches, versions, tests. The
+teams that struggle with LLM features are usually not struggling with the
+model — they are struggling because they exempted the model from the
+discipline they apply to every other dependency.
+
+Don't exempt it. It's just a dependency with a personality.

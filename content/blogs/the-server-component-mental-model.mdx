@@ -1,0 +1,117 @@
+export const metadata = {
+  title: "The Server Component Mental Model",
+  description:
+    "React Server Components stop making sense the moment you think of them as 'components that fetch'. Here is the mental model that actually holds up.",
+  date: "2026-06-10",
+  author: "Talha Mujahid",
+  tags: ["react", "nextjs", "programming"],
+}
+
+Most explanations of React Server Components start with what they *do*:
+they run on the server, they can be async, they can read from the database.
+All true, and all beside the point. The reason RSC feels confusing is that
+people try to fit it into the old model — "a component is a function that
+re-renders when state changes" — and Server Components simply do not live
+in that world.
+
+## Two programs, one tree
+
+The model that holds up is this: your app is now **two programs** that
+happen to share one component tree.
+
+- The **server program** runs once per request (or once per revalidation).
+  Its output is not HTML — it is a serialized description of UI, including
+  placeholders where client components go.
+- The **client program** is the React you already know: state, effects,
+  event handlers, re-renders.
+
+A Server Component is not a component that fetches. It is a piece of the
+server program. It runs, produces UI, and is *gone*. There is no instance
+sitting in memory waiting for a re-render. That is why it cannot have
+state or effects — there is nothing left alive to hold them.
+
+```tsx
+// This runs once on the server, produces UI, and disappears.
+export default async function TaskList() {
+  const tasks = await listTasksForUser()
+
+  return (
+    <ul>
+      {tasks.map((task) => (
+        <TaskRow key={task.id} task={task} />
+      ))}
+    </ul>
+  )
+}
+```
+
+## The boundary is a serialization boundary
+
+`"use client"` does not mean "this renders in the browser". It marks the
+point where the server program stops and hands props to the client
+program. Everything crossing that line must survive serialization — which
+is exactly why you cannot pass a function or a class instance as a prop
+to a client component, but you *can* pass JSX as `children`.
+
+That last part is the most under-used trick in the model:
+
+```tsx
+// Server Component
+export default async function Page() {
+  const session = await getCachedSession()
+
+  return (
+    <CollapsiblePanel>
+      {/* Server-rendered content flows through a client component */}
+      <ProfileSummary user={session.user} />
+    </CollapsiblePanel>
+  )
+}
+```
+
+`CollapsiblePanel` is a client component with `useState` for its
+open/closed state. `ProfileSummary` stays a Server Component. The client
+component holds *interactivity*, not *content*. Once you see composition
+this way, "how do I fetch data in a client component?" mostly stops being
+a question — you fetch above the boundary and pass the result down.
+
+## Practical consequences
+
+A few things fall out of the model for free:
+
+1. **Data fetching moves to where the data is used.** No more hoisting
+   every query to a top-level loader and threading props through five
+   layers. An async component awaits what it needs.
+2. **The client bundle shrinks by default.** Server Components ship zero
+   JavaScript. A markdown renderer, a syntax highlighter, a date library —
+   if it only runs on the server, the browser never downloads it.
+3. **Waterfalls become visible in the code.** Two sequential `await`s in
+   one component are a sequential fetch. Two sibling async components are
+   parallel. The tree shape *is* the fetch plan.
+
+```tsx
+// Sequential — second await waits for the first
+const user = await getUser()
+const orgs = await getOrganizations(user.id)
+
+// Parallel — siblings render concurrently
+<Suspense fallback={<Skeleton />}>
+  <UserCard />
+  <OrgList />
+</Suspense>
+```
+
+## Where people get stuck
+
+The classic mistake is sprinkling `"use client"` at the top of every file
+until the errors go away. Each directive drags an entire import subtree
+into the client bundle. Instead, push the directive to the *leaves*: the
+button that needs `onClick`, the input that needs `useState`. Keep pages,
+layouts, and anything that touches data on the server.
+
+The second mistake is treating server/client as a performance knob. It is
+an architecture decision. Ask "does this code need to be alive in the
+browser after the page loads?" If the answer is no — and for most of an
+app, it is no — it belongs to the server program.
+
+Two programs, one tree. Everything else is detail.

@@ -1,0 +1,195 @@
+export const metadata = {
+  title: "Patterns",
+  description:
+    "The recipes used for every feature: safe server actions, shared cache keys, SWR queries, URL state with nuqs, forms, data tables, and error handling.",
+  order: 8,
+}
+
+# Patterns
+
+Where [Conventions](/docs/conventions) covers rules, this page covers
+recipes — the concrete shapes that recur in every feature. When you build
+something new, start from the matching recipe; the `desk` and
+`announcements` features are the living reference implementations.
+
+## Server actions with next-safe-action
+
+Mutations are never bare `"use server"` functions. They go through the
+clients defined in `lib/safe-action.ts`, which layer on authentication,
+validation, and error shaping:
+
+- `actionClient` — base client, public actions.
+- `authActionClient` — adds a session requirement; handlers receive
+  `ctx.userId`.
+- `withPermission(statement)` — adds an app-level permission check on
+  top of authentication.
+
+```ts
+// features/desk/actions.ts
+export const createTask = authActionClient
+  .inputSchema(taskInputSchema)
+  .action(async ({ parsedInput, ctx }) => {
+    return createTaskForUser(ctx.userId, parsedInput)
+  })
+```
+
+The action is four lines because each concern already has a home:
+validation in the schema, identity in the client, business logic in the
+service. Read-only listings can be plain server functions; anything that
+writes goes through an action client.
+
+On the client, action results are unpacked with `getActionError()` from
+`lib/action-error.ts`, which flattens validation and server errors into
+one user-facing string — so every form handles failure the same way.
+
+## One name for one piece of data
+
+A cached dataset has exactly one key, exported from the feature's
+`cache-keys.ts`, and that constant is used in **three places**:
+
+```ts
+export const ANNOUNCEMENTS_KEY = "announcements"
+```
+
+1. **Server cache tag** — the service function declares
+   `"use cache"` and `cacheTag(ANNOUNCEMENTS_KEY)`.
+2. **Invalidation** — mutating actions call
+   `updateTag(ANNOUNCEMENTS_KEY)` after writing.
+3. **Client cache key** — SWR uses the same string, via the query
+   descriptors below.
+
+The payoff: "who caches this?" and "who invalidates it?" are answered by
+one grep.
+
+## SWR query descriptors
+
+Client components never call `useSWR` with ad-hoc keys and inline
+fetchers. Each feature exports descriptors from `queries.ts` pairing the
+key with the server function that fetches it:
+
+```ts
+// features/desk/queries.ts
+export const projectsQuery = {
+  key: PROJECTS_KEY,
+  fetcher: listProjects,
+}
+```
+
+```tsx
+const { data: projects } = useSWR(projectsQuery.key, projectsQuery.fetcher)
+```
+
+Parameterized data uses builder functions (`tasksQuery(filters)`) that
+serialize the filters into the key, plus a matching key-guard
+(`isTasksKey`) for targeted `mutate()` calls after mutations.
+
+## URL state with nuqs
+
+Anything the user would expect to survive a refresh — filters, search,
+active tab, pagination — lives in the URL, parsed by nuqs definitions in
+the feature's `search-params.ts`:
+
+```ts
+export const taskFiltersParsers = {
+  project: parseAsString,
+  status: parseAsStringEnum([...TASK_STATUSES]),
+  search: parseAsString.withDefault(""),
+}
+
+export const loadTaskFilters = createLoader(taskFiltersParsers)
+```
+
+The **same parsers** serve the server (pages call `loadTaskFilters(searchParams)`
+before querying) and the client (`useQueryState` with the parser). URL
+state is never parsed by hand, and `useState` is never used for state
+the URL should own.
+
+## Forms
+
+Every form is the same sandwich — react-hook-form for state, Zod for
+rules, shadcn `Field` components for markup:
+
+```tsx
+const form = useForm<TaskInput>({
+  resolver: zodResolver(taskInputSchema),
+  defaultValues: { title: "", status: "todo" },
+})
+
+async function onSubmit(values: TaskInput) {
+  const result = await createTask(values)
+
+  if (result?.serverError || result?.validationErrors) {
+    toast.add({ type: "error", title: getActionError(result) })
+    return
+  }
+
+  toast.add({ type: "success", title: t("created") })
+  form.reset()
+}
+```
+
+The schema comes from the feature's `validation.ts` — the **same schema
+the action validates on the server**. Client-side validation is UX;
+server-side is enforcement; both are one definition. Validation error
+copy is localized by building the schema with the translation function
+(see the auth forms in `app/[locale]/(auth)/_components` for the
+canonical example).
+
+## Data tables
+
+Tabular listings use TanStack Table through the shared wrappers in
+`components/data-table/` — `DataTable`, `DataTableColumnHeader`,
+`DataTablePagination`, `DataTableViewOptions`. A feature supplies only
+its column definitions:
+
+```tsx
+const columns: ColumnDef<MemberRow>[] = [
+  {
+    accessorKey: "email",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title={t("email")} />
+    ),
+  },
+  // ...
+]
+```
+
+Sorting, pagination, and column visibility come from the wrappers.
+Building a one-off table outside this system needs a reason.
+
+## Error handling
+
+One vocabulary of failures, defined in `lib/errors.ts`:
+`UnauthorizedError`, `ForbiddenError`, `NotFoundError`, plus guards like
+`isUniqueViolation`. Services **throw** these; they never return error
+codes. Each entry point translates once:
+
+- Server actions → next-safe-action catches, client shows
+  `getActionError(result)`.
+- Route handlers → `apiErrorResponse(error)` from `lib/http.ts` maps to
+  401 / 403 / 404 / 422 / 500.
+- Pages → `notFound()` and error boundaries.
+
+A service written for the app works in the public API unchanged, because
+the errors it throws are already part of the contract.
+
+## Adding a feature: the checklist
+
+Putting it all together, a new feature lands in this order:
+
+1. `features/<name>/schema.ts` — tables; then `pnpm db:generate` and
+   `pnpm db:migrate`.
+2. `validation.ts` — Zod schemas and enum tuples (shared with the schema).
+3. `repository.ts` — queries.
+4. `service.ts` — business rules, `"use cache"` + tags where reads are
+   hot.
+5. `actions.ts` — thin, using the right action client.
+6. `queries.ts` (+ `search-params.ts` if the UI filters) — client access.
+7. Routes in `app/[locale]/...` composing components from
+   `_components/`.
+8. Messages in `messages/types.ts`, `messages/en`, `messages/ar`.
+9. `pnpm typecheck && pnpm lint && pnpm build`.
+
+If a step feels unnecessary for your feature, skip it consciously — but
+the order of the steps is not negotiable, because each layer types the
+next.

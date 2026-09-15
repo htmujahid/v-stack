@@ -12,9 +12,25 @@ function SiteHeader() {
   return (
     <header className="border-b px-4 sm:px-6">
       <div className="mx-auto flex h-14 w-full max-w-5xl items-center justify-between">
-        <Link href="/" aria-label={t("home")}>
-          <BlocksIcon className="size-5" />
-        </Link>
+        <div className="flex items-center gap-6">
+          <Link href="/" aria-label={t("home")}>
+            <BlocksIcon className="size-5" />
+          </Link>
+          <nav className="flex items-center gap-4 text-sm text-muted-foreground">
+            <Link
+              href="/docs"
+              className="transition-colors hover:text-foreground"
+            >
+              {t("docs")}
+            </Link>
+            <Link
+              href="/blog"
+              className="transition-colors hover:text-foreground"
+            >
+              {t("blog")}
+            </Link>
+          </nav>
+        </div>
         <nav className="flex items-center gap-2">
           <LocaleSwitcher />
           <HeaderAuth />

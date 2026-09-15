@@ -1,0 +1,129 @@
+export const metadata = {
+  title: "Type-Safe Forms from Input to Database",
+  description:
+    "One Zod schema can drive your form validation, your server action, and your database types. Here is the full pattern with react-hook-form.",
+  date: "2026-07-02",
+  author: "Talha Mujahid",
+  tags: ["typescript", "zod", "react-hook-form", "programming"],
+}
+
+Forms are where type safety usually dies. The input is typed as `string`,
+the API handler re-validates with different rules, and the database
+insert casts everything with `as`. Three sources of truth, three places
+to drift apart.
+
+The fix is boring and effective: **one Zod schema, defined next to the
+domain, imported everywhere**.
+
+## The schema is the contract
+
+Define the schema in a shared module — not inside the component, not
+inside the API route:
+
+```ts
+// features/desk/validation.ts
+import { z } from "zod"
+
+export const TASK_STATUSES = ["todo", "in_progress", "done"] as const
+export const TASK_PRIORITIES = ["low", "medium", "high", "urgent"] as const
+
+export const taskInputSchema = z.object({
+  title: z.string().min(1).max(200),
+  description: z.string().max(2000).optional(),
+  status: z.enum(TASK_STATUSES),
+  priority: z.enum(TASK_PRIORITIES),
+  projectId: z.string().min(1),
+})
+
+export type TaskInput = z.infer<typeof taskInputSchema>
+```
+
+`z.infer` means the TypeScript type is *derived* from the runtime
+validator. They cannot disagree, because there is only one of them.
+
+## The client side
+
+`react-hook-form` plus `zodResolver` turns the schema into live form
+validation. No duplicated rules, no hand-written error messages scattered
+through JSX:
+
+```tsx
+const form = useForm<TaskInput>({
+  resolver: zodResolver(taskInputSchema),
+  defaultValues: {
+    title: "",
+    status: "todo",
+    priority: "medium",
+    projectId,
+  },
+})
+
+async function onSubmit(values: TaskInput) {
+  const result = await createTask(values)
+
+  if (result?.serverError || result?.validationErrors) {
+    toast.add({ type: "error", title: getActionError(result) })
+    return
+  }
+
+  form.reset()
+}
+```
+
+Note the shape of `onSubmit`: by the time it runs, `values` has already
+passed the schema. You are not handling "maybe invalid" data in your
+submit handler — that class of bug is gone.
+
+## The server side
+
+Never trust the client, even your own. The same schema validates again on
+the server. With `next-safe-action` this is one line:
+
+```ts
+// features/desk/actions.ts
+export const createTask = authActionClient
+  .inputSchema(taskInputSchema)
+  .action(async ({ parsedInput, ctx }) => {
+    return createTaskForUser(ctx.userId, parsedInput)
+  })
+```
+
+`parsedInput` is typed as `TaskInput` — genuinely typed, not asserted.
+If a request bypasses the form entirely (curl, a stale client, a bug),
+the schema rejects it before your business logic runs.
+
+## Sharing enums with the database
+
+The `as const` tuples pull double duty. Drizzle can consume them for
+column types, so the database enum, the validator, and the TypeScript
+union all come from one array:
+
+```ts
+// features/desk/schema.ts
+import { TASK_STATUSES } from "./validation"
+
+export const task = pgTable("task", {
+  id: text("id").primaryKey(),
+  status: text("status", { enum: TASK_STATUSES })
+    .notNull()
+    .default("todo"),
+  // ...
+})
+```
+
+Add a status to the array and the compiler walks you through every place
+that needs updating: the form select, the filter dropdown, the badge
+colors, the action. That is the whole point — the schema is not just
+validation, it is a change-detection system.
+
+## Rules of thumb
+
+- **Schemas live with the feature**, not with the form. Forms import them.
+- **Client validation is UX, server validation is security.** You need
+  both; you write them once.
+- **Derive, never restate.** `z.infer` for types, `schema.pick()` and
+  `schema.partial()` for variants like update forms.
+- **Error messages belong in the schema** (or a message map keyed by
+  path), so every consumer shows the same copy.
+
+None of this is clever. That is what makes it work.

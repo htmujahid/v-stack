@@ -1,0 +1,110 @@
+export const metadata = {
+  title: "URL State Is Underrated",
+  description:
+    "Filters, tabs, search, pagination — half the state in a typical app wants to live in the URL. The moment it does, refresh, share, and back-button all work for free.",
+  date: "2026-09-10",
+  author: "Talha Mujahid",
+  tags: ["react", "nextjs", "programming"],
+}
+
+There is a bug report every app eventually receives: *"I filtered the
+table, refreshed, and my filters disappeared."* The user is not asking
+for a feature. They are pointing out that your state lives in the wrong
+place.
+
+Filters, active tabs, search queries, pagination, sort order, an open
+detail panel — this is **navigation state**. The user thinks of it as
+*where they are*, not *what they did*. State that describes where you are
+belongs in the URL, because the URL is the one state container that
+survives refresh, works with the back button, can be bookmarked, and can
+be pasted into a bug report.
+
+## The cheap version and why it hurts
+
+You can do this by hand with `useSearchParams` and `router.push`.
+Everyone who has tried knows where it goes: string parsing scattered
+across components, `parseInt` with fallbacks, enums validated nowhere,
+and a subtle disagreement between the server's reading of the params and
+the client's.
+
+The problem is not the URL — it is that raw search params are stringly
+typed. They need the same treatment as any other external input: **parse
+once, validate, and hand out types**.
+
+## Parsers as the single source of truth
+
+With `nuqs`, the parser definitions become a small schema for your URL:
+
+```ts
+// features/desk/search-params.ts
+import {
+  createLoader,
+  parseAsString,
+  parseAsStringEnum,
+} from "nuqs/server"
+
+import { TASK_STATUSES } from "./validation"
+
+export const taskFiltersParsers = {
+  project: parseAsString,
+  status: parseAsStringEnum([...TASK_STATUSES]),
+  search: parseAsString.withDefault(""),
+}
+
+export const loadTaskFilters = createLoader(taskFiltersParsers)
+```
+
+The same definition serves both programs:
+
+```tsx
+// Server: page.tsx parses searchParams before rendering
+const filters = await loadTaskFilters(searchParams)
+const tasks = await listTasksForUser(userId, filters)
+```
+
+```tsx
+// Client: components read and write the same params, typed
+const [status, setStatus] = useQueryState(
+  "status",
+  taskFiltersParsers.status,
+)
+```
+
+Change a filter and the URL updates; refresh and the server renders the
+same view; share the link and a teammate sees exactly what you see. None
+of that was implemented. It fell out of choosing the right state
+container.
+
+## What belongs where
+
+A rule of thumb that has survived several codebases:
+
+| State | Container |
+| --- | --- |
+| Filters, search, sort, page, tab | URL |
+| Draft form input | Component state (react-hook-form) |
+| Server data | Server render + cache (SWR/RSC) |
+| Session, theme | Cookie |
+| Truly ephemeral UI (hover, open menu) | Component state |
+
+The interesting row is the first one. Almost everything people reach for
+a global store to solve is either server data (a cache problem) or
+navigation state (a URL problem). Empty the those two categories out of
+your client state and there is often nothing left for the store to do.
+
+## Objections, briefly
+
+**"The URL gets ugly."** Defaults help — `withDefault("")` keeps
+untouched params out of the URL entirely. And an ugly URL that restores
+state beats a clean URL that loses it.
+
+**"Some state is sensitive."** Then it does not go in the URL. The rule
+is about navigation state, not all state. Nobody is suggesting
+`?authToken=`.
+
+**"It causes re-renders / server round-trips."** Shallow routing updates
+the URL without touching the server when you want client-only updates,
+and batches when you update several params at once.
+
+The URL was the web's original state manager. It is still the best one
+for the state users can point at.

@@ -1,0 +1,124 @@
+export const metadata = {
+  title: "Conventions",
+  description:
+    "The naming, file-organization, and code-style rules followed everywhere in this repository — and the reasoning behind each of them.",
+  order: 7,
+}
+
+# Conventions
+
+Conventions are only useful when they are absolute. Each rule below is
+followed everywhere in the repository; when you add code, matching the
+surrounding conventions is part of the definition of done.
+
+## Naming
+
+| Thing | Convention | Example |
+| --- | --- | --- |
+| Files and folders | kebab-case | `sign-in-form.tsx`, `api-key-context.ts` |
+| React components | PascalCase | `SignInForm`, `DataTablePagination` |
+| Functions and variables | camelCase | `listTasksForUser`, `getCachedSession` |
+| Types and interfaces | PascalCase | `TaskInput`, `AnnouncementRow` |
+| Constants and cache keys | UPPER_SNAKE_CASE | `TASK_STATUSES`, `ANNOUNCEMENTS_KEY` |
+| Database tables/columns | singular snake_case | `task`, `user_id`, `created_at` |
+
+Function names encode the layer they live in: repositories use
+data-shaped names (`getActiveAnnouncements`, `insertAnnouncement`),
+services use domain-shaped names (`createProjectForUser`), actions use
+user-intent names (`createProject`).
+
+## Exports
+
+**Named exports only.** Default exports exist solely where a framework
+demands them: pages, layouts, route handlers, config files, and message
+catalogs.
+
+Components export with a declaration-then-export style, keeping the
+export list at the bottom of the file as a manifest:
+
+```tsx
+function SiteHeader() {
+  /* ... */
+}
+
+export { SiteHeader }
+```
+
+Named exports make renames mechanical, imports greppable, and prevent
+the same component from being imported under three different names.
+
+## File placement
+
+The decision tree for "where does this file go":
+
+1. **Used by one route (group)?** → a `_components/` or `_lib/` folder
+   next to that route. Underscore folders are route-private; importing
+   them from elsewhere is a review-blocking smell.
+2. **Domain logic?** → the feature's folder in `features/`, in the layer
+   it belongs to (see [Architecture](/docs/architecture)).
+3. **Shared UI, no domain knowledge?** → `components/`. If it is a
+   shadcn-managed primitive, it is in `components/ui` and stays there —
+   customizations happen via wrappers, not edits, so components remain
+   updatable through the shadcn CLI.
+4. **Cross-cutting infrastructure?** → `lib/`. One concern per file:
+   `email.ts`, `storage.ts`, `redis.ts`, `slug.ts`.
+
+Corollary: move code *up* the list lazily. A helper starts route-private
+and is promoted to `components/` or `lib/` when a second consumer
+actually appears — not before.
+
+## Imports
+
+- Always the `@/` alias for anything outside the current folder:
+  `@/lib/session`, `@/components/ui/badge`. Relative imports (`./`) are
+  for siblings within a module.
+- Import order is machine-enforced (Prettier with the sort-imports
+  plugin): framework imports, then third-party, then `@/` aliases, then
+  relatives — separated by blank lines. Never hand-arrange imports; run
+  the formatter.
+- Type-only imports use `import type`, keeping the runtime graph honest.
+
+## Styling
+
+- **Tailwind CSS 4 only** — no CSS modules, no styled-components, no
+  inline style objects (except values genuinely computed at runtime).
+- Design tokens are CSS variables defined in `app/globals.css` and
+  referenced through Tailwind's theme (`bg-background`,
+  `text-muted-foreground`). Raw palette classes like `bg-gray-100`
+  bypass dark mode and are avoided.
+- Class merging uses the `cn()` helper from `@/lib/utils` — never string
+  concatenation for conditional classes.
+- **Logical properties over directional ones**: `ms-4` not `ml-4`,
+  `pe-2` not `pr-2`, because Arabic flips the page (see
+  [Internationalization](/docs/internationalization)).
+
+## TypeScript
+
+- `strict` mode, no exceptions. `any` is a code smell; `as` casts demand
+  a comment or a better design.
+- **Derive types, do not restate them**: `z.infer` for validated input,
+  `$inferSelect` for rows, `typeof TUPLE[number]` for unions. If a type
+  and a runtime value describe the same thing, the type must come *from*
+  the value.
+- Environment variables are read at module edges (`db/index.ts`,
+  `lib/email.ts`), not scattered through business logic.
+
+## Language and copy
+
+- **All user-visible text goes through the message catalogs** — a bare
+  string in JSX is a missing translation for Arabic. See
+  [Internationalization](/docs/internationalization).
+- Code, comments, commit messages, and this documentation are English.
+
+## Quality gates
+
+Before a change is done:
+
+```bash
+pnpm typecheck   # zero errors, always
+pnpm lint        # zero warnings introduced
+pnpm build       # must pass for route/config changes
+```
+
+There is no CI-will-catch-it culture here; the gates are local and they
+are the author's job.

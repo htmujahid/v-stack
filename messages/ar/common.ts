@@ -15,12 +15,16 @@ export default {
     signOut: "تسجيل الخروج",
     profile: "الملف الشخصي",
     dashboard: "لوحة التحكم",
+    docs: "الوثائق",
+    blog: "المدونة",
   },
   footer: {
     copyright: "‎© {year} v-stack",
     status: "الحالة",
     terms: "الشروط",
     privacy: "الخصوصية",
+    docs: "الوثائق",
+    blog: "المدونة",
   },
   notFound: {
     title: "الصفحة غير موجودة",

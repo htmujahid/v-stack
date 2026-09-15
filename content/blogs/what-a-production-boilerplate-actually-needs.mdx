@@ -1,0 +1,82 @@
+export const metadata = {
+  title: "What a Production Boilerplate Actually Needs",
+  description:
+    "Most starter kits optimize for the first hour. A boilerplate earns its keep in month six — here is what has to be in it, and what should be left out.",
+  date: "2026-08-30",
+  author: "Talha Mujahid",
+  tags: ["boilerplate", "nextjs", "architecture"],
+}
+
+Starter kits are judged by the wrong demo. "Look, auth and a dashboard in
+five minutes" is the first hour of a project. A boilerplate proves itself
+in month six, when there are four developers, forty tables, and a
+customer asking why their invited teammate cannot see the workspace.
+
+Having built (and abandoned) several, here is the list I now consider
+non-negotiable — and, just as important, the list of things a boilerplate
+should refuse to include.
+
+## The non-negotiables
+
+**Auth that covers the whole surface.** Email/password is the demo.
+Production needs verification emails, password reset, 2FA with backup
+codes, session management with revocation, and OAuth — all wired to
+emails that actually send. Bolting 2FA onto a homegrown auth layer in
+month four is misery. This is why "roll your own auth" is bad advice
+even for people who *can*: the login form is 5% of the work.
+
+**Multi-tenancy decided on day one.** Organizations, members, invitations,
+and roles shape the entire schema. Retrofitting `organization_id` onto
+forty tables is a rewrite wearing a migration's clothes. Even a
+single-tenant product should make the decision *explicitly*, because the
+boilerplate's job is to make the decision visible.
+
+**A layered backend, even when it feels ceremonial.**
+
+```text
+validation  →  what is allowed in
+action      →  who is allowed to do it
+service     →  what the business rule is
+repository  →  how the database is asked
+```
+
+At week one this looks like bureaucracy. At month six it is the reason
+the API route and the server action share one code path instead of two
+divergent copies of the same logic.
+
+**Typed end-to-end, including the ugly parts.** Not just `strict: true` —
+typed environment variables, typed translations, schema-derived database
+types, validated action inputs. The type system is the only reviewer who
+reads every line of every PR.
+
+**Local infrastructure in one command.** Postgres, Redis, an SMTP catcher
+like Mailpit, S3-compatible storage like MinIO — in a `docker-compose up`.
+"Works on my machine" is a solved problem; solve it.
+
+**The boring pages.** Terms, privacy, a status endpoint, a 404 with
+navigation, error boundaries that say something useful. Nobody demos
+these. Every real launch needs all of them the same week.
+
+## What to leave out
+
+The failure mode of boilerplates is not missing features — it is
+**speculative features**. Every module you include is a module every
+project built on it must understand, update, or tear out.
+
+- **No payment integration** unless it is genuinely isolated. Billing
+  models vary too much; a half-fitting Stripe setup is worse than none.
+- **No state management framework** by default. Server components, URL
+  state, and a data-fetching cache cover most apps. Redux-by-default is
+  how boilerplates go stale.
+- **No CMS, no email marketing, no analytics vendor lock-in.** Provide
+  the seam (an events module, an email abstraction), not the vendor.
+- **No premature microservices.** A modular monolith with feature folders
+  *is* the extraction plan, if extraction is ever needed.
+
+## The real test
+
+A good boilerplate is not the one with the longest feature list. It is
+the one where, six months in, a new developer can find the code that
+handles an invitation email in under a minute — because the structure
+told them where to look. Conventions are the product. The features are
+just proof the conventions work.

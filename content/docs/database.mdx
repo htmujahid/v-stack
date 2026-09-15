@@ -1,0 +1,145 @@
+export const metadata = {
+  title: "Database",
+  description:
+    "The Drizzle ORM setup: schema organization, naming conventions, the migration workflow, and how the repository layer keeps SQL in one place.",
+  order: 5,
+}
+
+# Database
+
+PostgreSQL, accessed exclusively through
+[Drizzle ORM](https://orm.drizzle.team). No raw SQL in application code,
+no query builders outside the repository layer, and no schema changes
+outside the migration workflow.
+
+## Where schemas live
+
+Schema definitions are split by ownership, and `drizzle.config.ts` picks
+up both locations:
+
+```ts
+export default defineConfig({
+  schema: ["./db/schema/index.ts", "./features/*/schema.ts"],
+  out: "./db/migrations",
+  dialect: "postgresql",
+})
+```
+
+- **`db/schema/auth-schema.ts`** — every table better-auth needs (users,
+  sessions, accounts, organizations, members, teams, invitations, API
+  keys, two-factor secrets…). This file is **generated** by
+  `pnpm auth:schema` from the plugin configuration in `lib/auth.ts`.
+  Treat it as build output: never edit, always regenerate.
+- **`features/*/schema.ts`** — application tables live with the feature
+  that owns them. `features/desk/schema.ts` defines `project`, `task`,
+  `label`, and the `task_label` join table; `features/announcements/schema.ts`
+  defines `announcement`.
+
+Keeping app tables inside feature folders means a feature's entire
+vertical — schema, validation, queries, actions — sits in one directory,
+and deleting the folder deletes the feature.
+
+## Schema conventions
+
+The conventions visible across every table, in one example:
+
+```ts
+export const task = pgTable(
+  "task",
+  {
+    id: text("id").primaryKey(),
+    title: text("title").notNull(),
+    status: text("status", { enum: TASK_STATUSES })
+      .notNull()
+      .default("todo"),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    projectId: text("project_id")
+      .notNull()
+      .references(() => project.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at")
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => [index("task_user_id_idx").on(table.userId)],
+)
+```
+
+- **Tables**: singular, snake_case — `task`, not `tasks`.
+- **Columns**: snake_case in SQL, camelCase in TypeScript (Drizzle maps).
+- **Primary keys**: text `id`.
+- **Foreign keys**: `{table}_id` with an explicit `onDelete` behavior —
+  usually `cascade`, chosen deliberately per relation.
+- **Timestamps**: every table carries `created_at` and `updated_at`,
+  with `$onUpdate` keeping the latter honest.
+- **Indexes**: named `{table}_{column}_idx`.
+- **Enums**: plain text columns constrained by `{ enum: ... }` tuples
+  imported from the feature's `validation.ts`, so the database, the Zod
+  schema, and the TypeScript union share one definition. See
+  [Patterns](/docs/patterns).
+
+Row types are exported from the schema file
+(`export type TaskRow = typeof task.$inferSelect`) and are the only
+"database types" the rest of the feature uses.
+
+## The migration workflow
+
+Migrations are generated, reviewed, and committed — never improvised:
+
+```bash
+# 1. Edit the schema file (features/desk/schema.ts, say)
+
+# 2. Generate a migration from the diff
+pnpm db:generate
+
+# 3. Read the generated SQL in db/migrations/ — this is the review step
+
+# 4. Apply it
+pnpm db:migrate
+```
+
+Rules that keep migrations safe:
+
+- **Never edit an applied migration.** Generate a new one; history only
+  moves forward.
+- **Never edit the database directly** (including through
+  `pnpm db:studio`, which is for inspection). The schema files are the
+  single source of truth.
+- **Auth schema changes are a two-step**: `pnpm auth:schema` regenerates
+  the Drizzle definitions from `lib/auth.ts`, and *then*
+  `pnpm db:generate` produces the migration.
+
+## The repository layer
+
+All queries live in `features/*/repository.ts`. Repositories take and
+return plain data, know nothing about sessions or permissions, and are
+the only files that import the Drizzle instance from `db/`:
+
+```ts
+// features/desk/repository.ts
+export async function getProjectsWithTaskCounts(userId: string) {
+  return db
+    .select({
+      id: project.id,
+      name: project.name,
+      taskCount: count(task.id),
+    })
+    .from(project)
+    .leftJoin(task, eq(task.projectId, project.id))
+    .where(eq(project.userId, userId))
+    .groupBy(project.id)
+}
+```
+
+Aggregations, joins, and `returning()` clauses belong here — services
+above call named repository functions and stay readable. When a query is
+needed by both a server action and a public API route, this layer is
+what makes it *one* query.
+
+Constraint violations surface as domain concerns through helpers like
+`isUniqueViolation()` in `lib/errors.ts`, so a duplicate slug becomes a
+meaningful error message rather than a Postgres error code leaking to
+the UI.

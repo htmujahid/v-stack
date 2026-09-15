@@ -15,12 +15,16 @@ export default {
     signOut: "Sign out",
     profile: "Profile",
     dashboard: "Dashboard",
+    docs: "Docs",
+    blog: "Blog",
   },
   footer: {
     copyright: "© {year} v-stack",
     status: "Status",
     terms: "Terms",
     privacy: "Privacy",
+    docs: "Docs",
+    blog: "Blog",
   },
   notFound: {
     title: "Page not found",

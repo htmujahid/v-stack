@@ -1,0 +1,137 @@
+export const metadata = {
+  title: "Internationalization",
+  description:
+    "How next-intl powers the locale-prefixed routing, fully typed message catalogs, RTL support, and localized auth emails.",
+  order: 6,
+}
+
+# Internationalization
+
+The app ships in English and Arabic — which means i18n here is not just
+translation but **bidirectionality**: Arabic renders right-to-left, and
+every layout has to survive the flip. [next-intl](https://next-intl.dev)
+provides the machinery; a few project conventions keep it typed and
+maintainable.
+
+## Routing
+
+Every user-facing route lives under the `[locale]` segment, and
+`i18n/routing.ts` is the single definition of what locales exist:
+
+```ts
+export const routing = defineRouting({
+  locales: ["en", "ar"],
+  defaultLocale: "en",
+})
+
+export function getDirection(locale: AppLocale): "ltr" | "rtl" {
+  return locale === "ar" ? "rtl" : "ltr"
+}
+```
+
+`proxy.ts` at the repository root runs next-intl's middleware: it
+negotiates the locale from the URL and `Accept-Language`, and redirects
+bare paths (`/docs`) to prefixed ones (`/en/docs`).
+
+**Navigation always goes through `@/i18n/navigation`** — its `Link`,
+`redirect`, `usePathname`, and `useRouter` are locale-aware wrappers.
+Importing `next/link` directly in app code is a bug: it produces links
+that drop the locale prefix.
+
+```tsx
+import { Link } from "@/i18n/navigation"
+
+// Renders /en/docs or /ar/docs depending on the active locale
+<Link href="/docs">Docs</Link>
+```
+
+## Typed message catalogs
+
+Messages are **TypeScript modules, not JSON**, organized per locale and
+per domain:
+
+```text
+messages/
+├── types.ts        Interfaces describing every namespace
+├── en/
+│   ├── index.ts    Merges the domain modules, `satisfies Messages`
+│   ├── common.ts   Header, footer, metadata, error pages, app nav
+│   ├── marketing.ts, auth.ts, admin.ts, organization.ts, ...
+└── ar/             Identical structure, Arabic content
+```
+
+The type system enforces two guarantees that JSON catalogs cannot:
+
+1. **Locales cannot drift.** Both `en/index.ts` and `ar/index.ts` end
+   with `satisfies Messages`. Add a key to `types.ts` and both locales
+   fail to compile until translated.
+2. **Keys cannot be misspelled.** `global.d.ts` augments next-intl's
+   `AppConfig` with the `Messages` type and the locale union, so
+   `t("headr.home")` is a compile error and `t` calls autocomplete.
+
+Adding a string is therefore a three-file change: the interface in
+`messages/types.ts`, the English text, the Arabic text — and the
+compiler will not let you forget the third.
+
+## Using translations
+
+Server components (the default):
+
+```tsx
+import { getTranslations } from "next-intl/server"
+
+const t = await getTranslations("footer")
+return <p>{t("copyright", { year: 2026 })}</p>
+```
+
+Client components:
+
+```tsx
+import { useTranslations } from "next-intl"
+
+const t = useTranslations("header")
+```
+
+Page metadata follows the same pattern inside `generateMetadata`, with
+the locale passed explicitly:
+
+```tsx
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale } = await params
+  const t = await getTranslations({ locale, namespace: "terms.metadata" })
+  return { title: t("title"), description: t("description") }
+}
+```
+
+Dates, numbers, and relative times go through next-intl's `getFormatter`
+/ `useFormatter` rather than hand-rolled formatting, so they localize
+with the rest of the page.
+
+## RTL support
+
+Right-to-left is handled at three levels:
+
+- The root layout sets `dir={getDirection(locale)}` on `<html>`, and an
+  Arabic font is loaded via the `--font-arabic` CSS variable.
+- Styling uses **logical properties** — Tailwind's `ms-*`/`me-*`,
+  `ps-*`/`pe-*`, `start-*`/`end-*` — instead of left/right utilities, so
+  layouts mirror automatically. shadcn components are configured with
+  `"rtl": true` in `components.json`.
+- Iconography that implies direction (back arrows, chevrons) should flip
+  with the locale; prefer components that mirror in RTL over hardcoded
+  left/right icons.
+
+## Localized auth
+
+better-auth's i18n plugin (configured in `lib/auth.ts`) localizes auth
+errors and transactional emails. The auth client forwards the active
+locale on every request via an `x-locale` header, so a user signing in
+from an Arabic page gets Arabic error messages from the auth API too —
+translations for both layers stay in sync by living in the same
+repository.
+
+## What stays untranslated
+
+Developer-facing content is intentionally English-only: this
+documentation, the blog, code comments, commit messages, log output, and
+API error bodies. Translation effort goes where users are.

@@ -10,6 +10,12 @@ function SiteFooter() {
       <div className="mx-auto flex h-14 w-full max-w-5xl flex-wrap items-center justify-between gap-x-4 text-sm text-muted-foreground">
         <p>{t("copyright", { year: 2026 })}</p>
         <nav className="flex items-center gap-4">
+          <Link href="/docs" className="transition-colors hover:text-foreground">
+            {t("docs")}
+          </Link>
+          <Link href="/blog" className="transition-colors hover:text-foreground">
+            {t("blog")}
+          </Link>
           <Link
             href="/status"
             className="transition-colors hover:text-foreground"

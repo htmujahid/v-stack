@@ -1,0 +1,138 @@
+export const metadata = {
+  title: "Authentication",
+  description:
+    "How better-auth is configured, how sessions are read on the server and client, and how the three permission systems (app, organization, API key) fit together.",
+  order: 4,
+}
+
+# Authentication
+
+All authentication runs through [better-auth](https://better-auth.com),
+configured in a single file: `lib/auth.ts`. The framework handles the
+protocol work — hashing, tokens, cookies, OAuth flows — while the app
+supplies configuration, email templates, and permission statements.
+
+## The plugin stack
+
+`lib/auth.ts` composes better-auth from plugins. What is enabled and why:
+
+| Plugin | Provides |
+| --- | --- |
+| `username()` | Usernames alongside email (3–30 chars) |
+| `magicLink()` | Passwordless email sign-in (sign-in only, hashed tokens) |
+| `emailOTP()` | One-time codes for email verification, stored encrypted |
+| `twoFactor()` | TOTP with encrypted backup codes |
+| `admin()` | App-level roles and user management |
+| `organization()` | Orgs, members, teams, invitations, dynamic roles |
+| `apiKey()` | Scoped long-lived keys for the public API (`vstack_` prefix) |
+| `i18n()` | Localized auth errors and emails (en, ar) |
+| `nextCookies()` | Cookie handling for server actions, 5-minute cookie cache |
+
+Sessions are persisted through the Drizzle adapter to Postgres, with
+Redis (`lib/redis.ts`) as better-auth's secondary storage for hot session
+data and rate-limit counters.
+
+Two generated artifacts follow from this configuration:
+
+- **`db/schema/auth-schema.ts`** — the auth tables, regenerated with
+  `pnpm auth:schema` whenever `lib/auth.ts` changes. Never hand-edited.
+- **`lib/auth-client.ts`** — the browser client created with
+  `createAuthClient()`, mirroring the server plugins so client code gets
+  typed methods like `authClient.signIn.email()` and
+  `authClient.twoFactor.verifyTotp()`.
+
+## Reading the session
+
+**Server (the default).** Use `getCachedSession()` from `lib/session.ts`
+— a React `cache()` wrapper around `auth.api.getSession()`, so a layout,
+a page, and three components asking for the session in one request cost
+one lookup:
+
+```tsx
+// app/[locale]/(protected)/layout.tsx
+const session = await getCachedSession()
+
+if (!session) {
+  redirect({ href: "/sign-in", locale })
+}
+```
+
+**Client (when reactivity is needed).** `authClient.useSession()` via the
+`AuthProvider`, for UI that must react to sign-out or profile changes
+without a round trip.
+
+The guard lives **once, in the route-group layout** — `(protected)`,
+`(admin)`, and `[org]` each enforce their own requirement, and every page
+beneath them inherits it. Individual pages never re-check.
+
+## The three permission systems
+
+Authorization is deliberately split into three independent systems, each
+with its own statement file in `lib/`. Confusing them is the main way to
+write a security bug in this codebase, so know which one you are in:
+
+### 1. App-level roles — `lib/permissions.ts`
+
+Global roles (`admin`, `user`) built on the admin plugin's access
+control. Statements map resources to actions —
+`announcements: ["create", "update", "delete", "list"]` — and the
+`(admin)` area plus admin-only server actions enforce them:
+
+```ts
+export const createAnnouncement = withPermission({
+  announcements: ["create"],
+})
+  .inputSchema(announcementInputSchema)
+  .action(async ({ parsedInput }) => {
+    /* ... */
+  })
+```
+
+### 2. Organization roles — `lib/org-permissions.ts`
+
+Per-workspace roles (`owner`, `admin`, `member`) from the organization
+plugin, with **dynamic access control** enabled: each organization can
+define custom roles at runtime (managed in the `[org]/roles` UI). Checks
+go through `auth.api.hasPermission()` with the active organization in
+scope — the `[org]` layout resolves the org from the URL and verifies
+membership before anything renders.
+
+### 3. API key scopes — `lib/api-key-permissions.ts`
+
+Keys carry their own permission map (e.g. `tasks: ["read"]`), granted at
+creation on the API-keys page. Public route handlers enforce scopes with
+`requireApiKey()` from `lib/api-key-context.ts`:
+
+```ts
+// app/api/public/v1/tasks/route.ts
+export async function GET(request: Request) {
+  const key = await requireApiKey(request, { tasks: ["read"] })
+  const tasks = await listTasksForUser(key.userId, filters)
+  return Response.json(tasks)
+}
+```
+
+A request with a valid key but a missing scope throws `ForbiddenError`,
+which `apiErrorResponse()` translates to a 403.
+
+## Enforcement helpers
+
+Server-side code asserts identity and permission through
+`lib/auth-context.ts` rather than touching `auth.api` directly:
+
+- `requireUserId()` — throws `UnauthorizedError` when no session exists.
+- `requirePermission(statement)` — throws `ForbiddenError` when the
+  session's role lacks the statement.
+
+These throw the domain errors from `lib/errors.ts`, which every entry
+point already knows how to present — server actions surface them via
+`serverError`, API routes via HTTP status codes. Enforcement is one line
+because error translation is centralized.
+
+## Email flows
+
+Verification, password reset, magic links, OTP codes, and organization
+invitations all send through `sendEmail()` in `lib/email.ts`
+(nodemailer). In development the SMTP host defaults to Mailpit, so every
+flow is fully testable offline — open http://localhost:8025 and the
+email is there.
